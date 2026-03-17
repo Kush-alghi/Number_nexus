@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Nexus - Online</title>
+    <title>Number Nexus - Online P2P</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root {
             --bg-dark: #0a0a0f;
@@ -28,9 +29,8 @@
             overflow: hidden;
         }
 
-        /* --- Left History Panel --- */
         #history-sidebar {
-            width: 350px; /* Slightly wider */
+            width: 350px;
             background-color: var(--bg-panel);
             border-right: 2px solid var(--accent-cyan);
             display: flex;
@@ -67,7 +67,6 @@
         .log-elimination { border-left-color: var(--accent-pink); font-weight: bold; }
         .log-point { border-left-color: var(--accent-green); }
 
-        /* --- Main Enlarged Play Area --- */
         #main-content {
             flex: 1;
             position: relative;
@@ -82,11 +81,11 @@
             flex-direction: column;
             align-items: center;
             background: var(--bg-panel);
-            padding: 60px; /* Enlarged padding */
+            padding: 60px;
             border-radius: 20px;
             box-shadow: 0 10px 50px rgba(0,0,0,0.8);
             text-align: center;
-            max-width: 800px; /* ENLARGED PLAY BOX */
+            max-width: 800px;
             width: 100%;
             animation: fadeIn 0.4s ease;
         }
@@ -94,7 +93,7 @@
         .screen.active { display: flex; }
 
         h1 {
-            font-size: 4rem; /* Enlarged font */
+            font-size: 4rem;
             margin-bottom: 20px;
             background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink));
             -webkit-background-clip: text;
@@ -107,7 +106,6 @@
         h3 { font-size: 2rem; margin-bottom: 20px; color: var(--accent-yellow); }
         p { margin-bottom: 30px; font-size: 1.2rem; color: var(--text-muted); line-height: 1.6; }
 
-        /* --- Inputs & Buttons --- */
         .input-group { width: 100%; margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; margin-bottom: 8px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; }
 
@@ -117,7 +115,7 @@
             background: rgba(0,0,0,0.4);
             border: 2px solid #333;
             color: white;
-            font-size: 1.5rem; /* Enlarged */
+            font-size: 1.5rem;
             border-radius: 12px;
             text-align: center;
             outline: none;
@@ -139,21 +137,20 @@
             border: none;
             border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
         button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4); }
+        button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; box-shadow: none; }
         .btn-alt { background: linear-gradient(45deg, #cc00ff, var(--accent-pink)); }
         .btn-danger { background: linear-gradient(45deg, #ff0000, #cc0000); }
-        .btn-disabled { background: #333; color: #777; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
-        /* --- Big Fade Animation --- */
         #big-feedback {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) scale(0.5);
-            font-size: 7rem; /* Massive feedback */
+            font-size: 7rem;
             font-weight: 900;
             text-transform: uppercase;
             text-align: center;
@@ -166,11 +163,9 @@
 
         .animate-big-fade { animation: bigFadeOut 2.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
 
-        /* --- Player List (Lobby) --- */
         #lobby-players { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; }
         .player-badge { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); padding: 10px 20px; border-radius: 30px; font-size: 1.2rem; }
 
-        /* --- Animations --- */
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes bigFadeOut {
@@ -186,12 +181,11 @@
     <aside id="history-sidebar">
         <h2>Network Log</h2>
         <div id="history-log">
-            <div class="log-entry" style="color: var(--text-muted)">Not connected to a room...</div>
+            <div class="log-entry" style="color: var(--text-muted)">Not connected...</div>
         </div>
     </aside>
 
     <main id="main-content">
-        
         <div id="big-feedback"></div>
 
         <div id="screen-menu" class="screen active">
@@ -205,20 +199,17 @@
 
         <div id="screen-host" class="screen">
             <h2>Host Settings</h2>
-            
             <div class="input-group">
                 <label>Your Name</label>
                 <input type="text" id="host-name" placeholder="Enter your alias">
             </div>
-
             <div class="input-group">
                 <label>Game Mode</label>
                 <select id="host-mode">
-                    <option value="2">2-Player Showdown (High/Low)</option>
-                    <option value="multi">Multiplayer Chaos (Proximity %)</option>
+                    <option value="2">2-Player Showdown</option>
+                    <option value="multi">Multiplayer Chaos</option>
                 </select>
             </div>
-
             <div class="btn-row">
                 <button class="btn-danger" onclick="showScreen('menu')">Back</button>
                 <button onclick="createRoom()">Generate Room</button>
@@ -244,233 +235,222 @@
         <div id="screen-lobby" class="screen">
             <h2>Room Code: <span id="display-room-code" style="color: var(--accent-pink); letter-spacing: 5px;">----</span></h2>
             <p id="lobby-mode-text"></p>
-            
-            <div id="lobby-players">
-                </div>
-
-            <button id="btn-start-game" class="btn-disabled" disabled onclick="startSecretPhase()">Waiting for players...</button>
-        </div>
-
-        <div id="screen-secret" class="screen">
-            <h2 style="color: var(--accent-pink);">Secure Your Number</h2>
-            <p>Enter your secret number (1 - 100). No one else can see this.</p>
-            <input type="password" id="secret-input" placeholder="Secret Number...">
-            <button onclick="lockInSecret()">Lock In</button>
+            <div id="lobby-players"></div>
+            <button id="btn-start-game" disabled onclick="hostStartGame()">Waiting for players...</button>
         </div>
 
         <div id="screen-game" class="screen">
-            <h3 id="turn-status">Waiting for game to sync...</h3>
+            <h3 id="turn-status">Game Started!</h3>
             
             <div id="active-play-area" style="display: none; width: 100%;">
-                <p>Guess an opponent's secret number (1 - 100).</p>
+                <p>Guess a number (1 - 100).</p>
                 <input type="number" id="guess-input" placeholder="Make your guess...">
                 <button onclick="sendGuess()">Submit Guess</button>
             </div>
 
             <div id="waiting-area" style="display: none; width: 100%;">
-                <p style="font-size: 1.5rem; color: var(--accent-cyan);">Please wait for the active player to guess...</p>
-                <button class="btn-alt" style="margin-top: 20px; padding: 10px; font-size: 1rem;" onclick="simulateOpponentGuess()">[Simulate Opponent Guess]</button>
+                <p style="font-size: 1.5rem; color: var(--accent-cyan);">Waiting for the active player to guess...</p>
             </div>
         </div>
-
     </main>
 
     <script>
-        // --- Game State (Structured for Future Backend Integration) ---
-        let gameState = {
-            roomId: null,
-            isHost: false,
-            localPlayer: { id: generateId(), name: '', secret: null, isAlive: true },
-            players: [], // Array of all connected players
-            mode: '2', // '2' or 'multi'
-            range: 100,
-            activeTurnId: null,
-            status: 'menu' // menu, lobby, secret, playing
-        };
+        // --- Game & Network State ---
+        let localPlayer = { id: generateId(), name: '', isHost: false };
+        let gameState = { roomId: null, mode: '2', players: [], activeTurnId: null, status: 'lobby' };
+        
+        // PeerJS Variables
+        let peer = null;
+        let connections = []; // Host uses this to talk to guests
+        let hostConnection = null; // Guests use this to talk to host
 
-        // --- DOM Elements ---
-        const historyLog = document.getElementById('history-log');
-        const bigFeedback = document.getElementById('big-feedback');
-
-        // --- Utility ---
+        // --- Utils ---
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`screen-${screenId}`).classList.add('active');
         }
-
         function generateId() { return Math.random().toString(36).substr(2, 9); }
-        
         function generateRoomCode() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             let result = '';
             for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
             return result;
         }
-
         function logEvent(msg, type = 'normal') {
             const div = document.createElement('div');
-            div.className = `log-entry ${type === 'elimination' ? 'log-elimination' : ''} ${type === 'point' ? 'log-point' : ''}`;
+            div.className = `log-entry ${type}`;
             div.innerHTML = msg;
-            historyLog.prepend(div);
+            document.getElementById('history-log').prepend(div);
         }
-
         function triggerBigFade(text, color) {
-            bigFeedback.innerText = text;
-            bigFeedback.style.color = color;
-            bigFeedback.classList.remove('animate-big-fade');
-            void bigFeedback.offsetWidth;
-            bigFeedback.classList.add('animate-big-fade');
+            const bf = document.getElementById('big-feedback');
+            bf.innerText = text; bf.style.color = color;
+            bf.classList.remove('animate-big-fade'); void bf.offsetWidth; bf.classList.add('animate-big-fade');
         }
 
-        // --- Network Emulation Actions (WHERE YOU ADD FIREBASE/SOCKET.IO) ---
-        
+        // ==========================================
+        // HOST LOGIC (Acts as the Server)
+        // ==========================================
         function createRoom() {
-            gameState.isHost = true;
-            gameState.localPlayer.name = document.getElementById('host-name').value || 'Host';
+            localPlayer.name = document.getElementById('host-name').value || 'Host';
+            localPlayer.isHost = true;
             gameState.mode = document.getElementById('host-mode').value;
             gameState.roomId = generateRoomCode();
             
-            // FUTURE: send to backend -> db.createRoom(gameState.roomId, { host: gameState.localPlayer })
-            
-            gameState.players.push(gameState.localPlayer); // Add self
-            setupLobby();
-            
-            // SIMULATION: Auto-add bots so user can test the UI
-            setTimeout(() => mockNetworkPlayerJoin('Player 2'), 1500);
-            if(gameState.mode === 'multi') setTimeout(() => mockNetworkPlayerJoin('Player 3'), 3000);
+            gameState.players.push({ id: localPlayer.id, name: localPlayer.name });
+
+            // Initialize PeerJS using the Room Code as the unique ID
+            logEvent("Connecting to server broker...");
+            peer = new Peer('nexus-' + gameState.roomId);
+
+            peer.on('open', (id) => {
+                logEvent(`Room Created. Waiting for connections...`);
+                updateLobbyUI();
+                showScreen('lobby');
+            });
+
+            // When a guest connects to the host
+            peer.on('connection', (conn) => {
+                connections.push(conn);
+                
+                // Listen for messages from the guest
+                conn.on('data', (data) => {
+                    if (data.type === 'JOIN') {
+                        gameState.players.push({ id: data.id, name: data.name });
+                        logEvent(`${data.name} joined the room!`, 'log-point');
+                        broadcastState(); // Tell everyone the new player list
+                    }
+                    if (data.type === 'GUESS') {
+                        handleGuessData(data.playerId, data.value);
+                    }
+                });
+            });
         }
 
-        function joinRoom() {
-            gameState.isHost = false;
-            gameState.roomId = document.getElementById('join-code').value.toUpperCase();
-            gameState.localPlayer.name = document.getElementById('join-name').value || 'Guest';
-            
-            // FUTURE: send to backend -> db.joinRoom(gameState.roomId, gameState.localPlayer)
-            
-            logEvent(`Connecting to room ${gameState.roomId}...`);
-            setupLobby();
-        }
-
-        function setupLobby() {
-            document.getElementById('display-room-code').innerText = gameState.roomId;
-            let modeText = gameState.mode === '2' ? "2-Player Mode" : "Multiplayer Mode";
-            document.getElementById('lobby-mode-text').innerText = modeText;
+        function broadcastState() {
+            if (!localPlayer.isHost) return;
             updateLobbyUI();
-            showScreen('lobby');
-            logEvent(`Joined Room Lobby.`, 'point');
+            connections.forEach(conn => conn.send({ type: 'STATE_UPDATE', state: gameState }));
         }
 
+        // ==========================================
+        // GUEST LOGIC (Connects to the Host)
+        // ==========================================
+        function joinRoom() {
+            localPlayer.name = document.getElementById('join-name').value || 'Guest';
+            localPlayer.isHost = false;
+            let code = document.getElementById('join-code').value.toUpperCase();
+            
+            logEvent("Finding room...");
+            peer = new Peer(); // Guest gets a random ID
+
+            peer.on('open', () => {
+                // Connect to the Host's Room Code ID
+                hostConnection = peer.connect('nexus-' + code);
+
+                hostConnection.on('open', () => {
+                    logEvent("Connected to Host!");
+                    hostConnection.send({ type: 'JOIN', id: localPlayer.id, name: localPlayer.name });
+                    showScreen('lobby');
+                });
+
+                // Listen for updates from Host
+                hostConnection.on('data', (data) => {
+                    if (data.type === 'STATE_UPDATE') {
+                        gameState = data.state;
+                        updateLobbyUI();
+                        if (gameState.status === 'playing' && document.getElementById('screen-lobby').classList.contains('active')) {
+                            showScreen('game');
+                        }
+                        updateGameUI();
+                    }
+                    if (data.type === 'FEEDBACK') {
+                        triggerBigFade(data.text, data.color);
+                        logEvent(data.logMsg);
+                    }
+                });
+            });
+        }
+
+        // ==========================================
+        // UI & GAME UPDATES
+        // ==========================================
         function updateLobbyUI() {
+            document.getElementById('display-room-code').innerText = gameState.roomId || "----";
+            document.getElementById('lobby-mode-text').innerText = gameState.mode === '2' ? "2-Player Mode" : "Multiplayer Mode";
+            
             const container = document.getElementById('lobby-players');
             container.innerHTML = '';
             gameState.players.forEach(p => {
                 container.innerHTML += `<div class="player-badge">${p.name}</div>`;
             });
 
-            // Host can start if enough players
-            if (gameState.isHost) {
+            if (localPlayer.isHost) {
                 const btn = document.getElementById('btn-start-game');
-                const required = gameState.mode === '2' ? 2 : 3;
-                if (gameState.players.length >= required) {
+                const req = gameState.mode === '2' ? 2 : 3;
+                if (gameState.players.length >= req) {
                     btn.disabled = false;
-                    btn.className = '';
                     btn.innerText = "Start Game";
                 }
             }
         }
 
-        // --- Transition to Game ---
-        function startSecretPhase() {
-            // FUTURE: send to backend -> db.updateRoomStatus('secret')
-            logEvent("Game Starting! Lock in your secret numbers.");
-            showScreen('secret');
-        }
-
-        function lockInSecret() {
-            let val = parseInt(document.getElementById('secret-input').value);
-            if (isNaN(val) || val < 1 || val > gameState.range) { alert("Enter a valid number 1-100."); return; }
-            
-            gameState.localPlayer.secret = val;
-            
-            // FUTURE: send to backend -> db.updatePlayerSecret(val). 
-            // Wait for backend to say "All players locked in"
-            
-            // SIMULATION: Skip wait and start game
-            gameState.activeTurnId = gameState.players[0].id; // Host goes first
-            updateGameScreenUI();
+        function hostStartGame() {
+            if (!localPlayer.isHost) return;
+            gameState.status = 'playing';
+            gameState.activeTurnId = gameState.players[0].id; // Host starts
+            broadcastState();
             showScreen('game');
-            logEvent("All secrets locked. The Nexus begins.");
+            updateGameUI();
         }
 
-        // --- Core Online Gameplay ---
-        function updateGameScreenUI() {
-            let isMyTurn = (gameState.activeTurnId === gameState.localPlayer.id);
-            const activeArea = document.getElementById('active-play-area');
-            const waitingArea = document.getElementById('waiting-area');
-            const status = document.getElementById('turn-status');
+        function updateGameUI() {
+            if (gameState.status !== 'playing') return;
+            let isMyTurn = (gameState.activeTurnId === localPlayer.id);
+            let activePlayer = gameState.players.find(p => p.id === gameState.activeTurnId);
 
-            if (isMyTurn) {
-                status.innerText = "IT IS YOUR TURN!";
-                status.style.color = "var(--accent-green)";
-                activeArea.style.display = "block";
-                waitingArea.style.display = "none";
-            } else {
-                let activePlayer = gameState.players.find(p => p.id === gameState.activeTurnId);
-                status.innerText = `Waiting for ${activePlayer.name} to guess...`;
-                status.style.color = "var(--text-muted)";
-                activeArea.style.display = "none";
-                waitingArea.style.display = "block";
-            }
+            document.getElementById('turn-status').innerText = isMyTurn ? "IT IS YOUR TURN!" : `Waiting for ${activePlayer.name}...`;
+            document.getElementById('turn-status').style.color = isMyTurn ? "var(--accent-green)" : "var(--text-muted)";
+            
+            document.getElementById('active-play-area').style.display = isMyTurn ? "block" : "none";
+            document.getElementById('waiting-area').style.display = isMyTurn ? "none" : "block";
         }
 
         function sendGuess() {
             let guess = parseInt(document.getElementById('guess-input').value);
             if (isNaN(guess)) return;
-            
-            // FUTURE: send to backend -> db.submitGuess(guess)
-            // The backend does the math and broadcasts the result to EVERYONE.
-            
-            // SIMULATION: Fake the server response
-            processNetworkGuess(gameState.localPlayer, guess);
+
+            if (localPlayer.isHost) {
+                handleGuessData(localPlayer.id, guess);
+            } else {
+                hostConnection.send({ type: 'GUESS', playerId: localPlayer.id, value: guess });
+            }
             document.getElementById('guess-input').value = '';
         }
 
-        // Called by Network/Backend when ANY player makes a guess
-        function processNetworkGuess(guesser, guessValue) {
-            logEvent(`<strong>${guesser.name}</strong> guessed ${guessValue}.`);
+        // Host calculates the game logic and sends feedback
+        function handleGuessData(playerId, guessValue) {
+            let guesser = gameState.players.find(p => p.id === playerId);
             
-            // Mocking the result (In real app, backend calculates this to prevent cheating)
-            let resultType = gameState.mode === '2' ? 'High/Low' : 'Proximity';
+            // Randomize a High/Low response for testing gameplay loop
+            let resultType = Math.random() > 0.5 ? "TOO HIGH!" : "TOO LOW!";
+            let logMsg = `<strong>${guesser.name}</strong> guessed ${guessValue}. Result: ${resultType}`;
             
-            if (resultType === 'High/Low') {
-                triggerBigFade("TOO HIGH!", 'var(--accent-cyan)');
-                logEvent("Result: Too High.");
-            } else {
-                triggerBigFade("45% NEAR!", 'var(--accent-yellow)');
-                logEvent("Result: 45% Heat.");
-            }
+            // Show to Host
+            triggerBigFade(resultType, 'var(--accent-cyan)');
+            logEvent(logMsg);
+
+            // Broadcast to Guests
+            connections.forEach(conn => conn.send({ type: 'FEEDBACK', text: resultType, color: 'var(--accent-cyan)', logMsg: logMsg }));
 
             // Cycle turn
             let currentIndex = gameState.players.findIndex(p => p.id === gameState.activeTurnId);
             let nextIndex = (currentIndex + 1) % gameState.players.length;
             gameState.activeTurnId = gameState.players[nextIndex].id;
             
-            setTimeout(updateGameScreenUI, 1000);
+            setTimeout(() => broadcastState(), 1000);
+            updateGameUI();
         }
-
-        // --- MOCK NETWORK FUNCTIONS (To let you test the UI) ---
-        function mockNetworkPlayerJoin(name) {
-            if (gameState.status === 'menu') return;
-            gameState.players.push({ id: generateId(), name: name, secret: 50, isAlive: true });
-            logEvent(`${name} joined the room.`, 'point');
-            updateLobbyUI();
-        }
-
-        function simulateOpponentGuess() {
-            let activeP = gameState.players.find(p => p.id === gameState.activeTurnId);
-            processNetworkGuess(activeP, Math.floor(Math.random() * 100) + 1);
-        }
-
     </script>
 </body>
 </html>
