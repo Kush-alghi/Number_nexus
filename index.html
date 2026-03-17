@@ -20,20 +20,27 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;}
-body{background:var(--bg);color:var(--text);font-family:var(--fb);display:flex;height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);display:flex;height:100vh;position:relative;}
+
+/* ── LIVE CANVAS BACKGROUND ── */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
 
 /* scanlines */
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.13) 2px,rgba(0,0,0,.13) 4px);pointer-events:none;z-index:9999;opacity:.55;}
-
-/* glow orbs */
-.orb{position:fixed;border-radius:50%;pointer-events:none;filter:blur(150px);z-index:0;}
-.o1{width:800px;height:800px;background:rgba(0,232,255,.05);top:-300px;left:-300px;animation:oa 25s ease-in-out infinite alternate;}
-.o2{width:600px;height:600px;background:rgba(255,26,108,.04);bottom:-200px;right:-200px;animation:ob 18s ease-in-out infinite alternate;}
-@keyframes oa{to{transform:translate(80px,100px)}}
-@keyframes ob{to{transform:translate(-80px,-70px)}}
+body::after{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.12) 2px,rgba(0,0,0,.12) 4px);
+  pointer-events:none;z-index:9999;opacity:.45;
+}
 
 /* ── SIDEBAR ── */
-aside{width:238px;min-width:238px;background:var(--bg2);border-right:1px solid var(--b1);display:flex;flex-direction:column;z-index:10;}
+aside{
+  width:238px;min-width:238px;
+  background:rgba(4,5,13,.9);
+  border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;
+  z-index:10;
+  backdrop-filter:blur(12px);
+}
 .lh{padding:13px 15px;font-family:var(--fm);font-size:.55rem;letter-spacing:3px;color:var(--cyan);border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:8px;text-transform:uppercase;}
 .ld{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:bl 1.6s infinite;}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:.08}}
@@ -60,7 +67,13 @@ main{flex:1;display:flex;align-items:center;justify-content:center;overflow-y:au
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
 /* ── CARD ── */
-.card{background:var(--card);border:1px solid var(--b2);border-radius:14px;padding:26px 28px;position:relative;overflow:hidden;}
+.card{
+  background:rgba(9,11,24,.92);
+  border:1px solid var(--b2);
+  border-radius:14px;padding:26px 28px;
+  position:relative;overflow:hidden;
+  backdrop-filter:blur(16px);
+}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan) 30%,var(--purple) 70%,transparent);opacity:.65;}
 
 /* ── TYPOGRAPHY ── */
@@ -106,85 +119,38 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 /* ── TURN BANNER ── */
 .tbanner{font-family:var(--fh);font-size:1.35rem;letter-spacing:3px;text-align:center;padding:12px;border-radius:8px;margin-bottom:12px;transition:all .35s;}
 
-/* ══════════════════════════════════════════
-   BROADCAST PANEL — THE CORE OF THE GAME
-   Shown to ALL players after every guess
-══════════════════════════════════════════ */
-.bcast{
-  border-radius:11px;padding:16px;margin-bottom:12px;
-  border:1px solid var(--b2);background:rgba(255,255,255,.018);
-  position:relative;overflow:hidden;
-}
-.bcast.new-guess{
-  animation:bcIn .5s cubic-bezier(.16,1,.3,1);
-}
+/* ── BROADCAST PANEL ── */
+.bcast{border-radius:11px;padding:16px;margin-bottom:12px;border:1px solid var(--b2);background:rgba(255,255,255,.018);position:relative;overflow:hidden;}
+.bcast.new-guess{animation:bcIn .5s cubic-bezier(.16,1,.3,1);}
 @keyframes bcIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.bcast.exact-hit{border-color:var(--green);background:rgba(0,255,136,.05);box-shadow:0 0 20px rgba(0,255,136,.18);animation:exactPulse 1s ease-in-out 3;}
+@keyframes exactPulse{0%,100%{box-shadow:0 0 20px rgba(0,255,136,.18)}50%{box-shadow:0 0 38px rgba(0,255,136,.5)}}
 
-.bcast-who{
-  font-family:var(--fm);font-size:.72rem;margin-bottom:12px;
-  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-}
+.bcast-who{font-family:var(--fm);font-size:.72rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .bcast-gname{color:var(--cyan);font-size:.82rem;}
 .bcast-verb{color:var(--muted);}
-.bcast-num{
-  font-family:var(--fh);font-size:1.5rem;letter-spacing:4px;
-  color:var(--text);padding:2px 10px;
-  background:rgba(255,255,255,.05);border:1px solid var(--b2);border-radius:5px;
-}
+.bcast-num{font-family:var(--fh);font-size:1.5rem;letter-spacing:4px;color:var(--text);padding:2px 10px;background:rgba(255,255,255,.05);border:1px solid var(--b2);border-radius:5px;}
 
-/* proximity display */
-.prox-display{
-  background:rgba(0,0,0,.3);border-radius:8px;
-  padding:14px 16px;
-  border:1px solid var(--b2);
-}
-.prox-main{
-  display:flex;align-items:center;gap:14px;margin-bottom:10px;
-}
-.prox-pct-big{
-  font-family:var(--fh);font-size:2.4rem;letter-spacing:3px;
-  min-width:90px;text-align:right;flex-shrink:0;
-  transition:color .4s;
-}
-.prox-bar-col{flex:1;}
-.prox-bar-track{height:10px;background:var(--b1);border-radius:10px;overflow:hidden;margin-bottom:5px;}
+.prox-display{background:rgba(0,0,0,.3);border-radius:8px;padding:14px 16px;border:1px solid var(--b2);}
+
+/* BAR — no % number shown */
+.prox-bar-track{height:14px;background:var(--b1);border-radius:10px;overflow:hidden;margin-bottom:10px;position:relative;}
 .prox-bar-fill{
   height:100%;border-radius:10px;
-  transition:width .8s cubic-bezier(.16,1,.3,1),background .4s;
-  min-width:4px;
+  transition:width .85s cubic-bezier(.16,1,.3,1);
+  min-width:4px;position:relative;
 }
-.prox-label{
-  font-family:var(--fh);font-size:1rem;letter-spacing:2px;
-  transition:color .4s;
-}
-.prox-mystery{
-  font-family:var(--fm);font-size:.6rem;letter-spacing:2px;
-  color:var(--muted);margin-top:6px;
-  display:flex;align-items:center;gap:6px;
-}
+/* shimmer */
+.prox-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28) 50%,transparent);animation:shimmer 1.8s ease-in-out infinite;}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+
+.prox-label{font-family:var(--fh);font-size:1.15rem;letter-spacing:3px;text-align:center;transition:color .4s;}
+.prox-mystery{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--muted);margin-top:8px;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;}
 .prox-mystery::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--muted);flex-shrink:0;}
 
-/* exact hit style */
-.bcast.exact-hit{
-  border-color:var(--green);
-  background:rgba(0,255,136,.05);
-  box-shadow:0 0 20px rgba(0,255,136,.18);
-  animation:exactIn .6s cubic-bezier(.16,1,.3,1),exactPulse 1s ease-in-out 3;
-}
-@keyframes exactIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
-@keyframes exactPulse{0%,100%{box-shadow:0 0 20px rgba(0,255,136,.18)}50%{box-shadow:0 0 35px rgba(0,255,136,.45)}}
-
 /* ── GUESS INPUT ── */
-.ginput{
-  display:flex;gap:8px;padding:12px 14px;
-  background:rgba(0,232,255,.04);border:1px solid rgba(0,232,255,.12);border-radius:9px;
-  margin-top:8px;align-items:center;
-}
-.ginput input{
-  flex:1;background:rgba(255,255,255,.04);border:1px solid var(--b2);border-radius:7px;
-  padding:12px 14px;color:var(--text);font-family:var(--fh);font-size:1.7rem;
-  letter-spacing:5px;text-align:center;outline:none;transition:all .18s;
-}
+.ginput{display:flex;gap:8px;padding:12px 14px;background:rgba(0,232,255,.04);border:1px solid rgba(0,232,255,.12);border-radius:9px;margin-top:8px;align-items:center;}
+.ginput input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--b2);border-radius:7px;padding:12px 14px;color:var(--text);font-family:var(--fh);font-size:1.7rem;letter-spacing:5px;text-align:center;outline:none;transition:all .18s;}
 .ginput input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,232,255,.09);}
 .ginput-hint{font-family:var(--fm);font-size:.58rem;color:var(--muted);letter-spacing:2px;text-align:center;margin-top:6px;}
 
@@ -193,7 +159,7 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 .spin{width:42px;height:42px;border:2px solid var(--b2);border-top-color:var(--purple);border-radius:50%;margin:0 auto 12px;animation:sp 1s linear infinite;}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-/* ── HERO (menu) ── */
+/* ── HERO ── */
 .hero{display:flex;justify-content:center;align-items:center;height:80px;margin-bottom:14px;position:relative;}
 .ring{position:absolute;border-radius:50%;border:1px solid;animation:rt linear infinite;}
 .ring:nth-child(1){width:62px;height:62px;border-color:rgba(0,232,255,.45);animation-duration:6s;}
@@ -203,22 +169,18 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 .hnum{font-family:var(--fh);font-size:2rem;color:var(--cyan);text-shadow:0 0 18px var(--cyan);z-index:1;animation:fl 3s ease-in-out infinite;}
 @keyframes fl{0%,84%,100%{opacity:1}87%,95%{opacity:.12}}
 
-/* ── GUESS HISTORY ── */
+/* ── GUESS HISTORY — no % shown ── */
 .glog{margin-top:4px;}
-.glog-row{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 10px;border-radius:6px;border:1px solid var(--b1);
-  background:rgba(255,255,255,.012);margin-bottom:4px;
-  font-family:var(--fm);font-size:.6rem;color:var(--muted);
-  transition:all .3s;
-}
+.glog-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;border:1px solid var(--b1);background:rgba(255,255,255,.012);margin-bottom:4px;font-family:var(--fm);font-size:.6rem;color:var(--muted);}
 .glog-row.exact{border-color:rgba(0,255,136,.3);color:var(--green);}
-.glog-name{color:var(--cyan);min-width:60px;}
-.glog-val{color:var(--text);font-size:.7rem;min-width:30px;text-align:center;}
-.glog-pct{margin-left:auto;letter-spacing:1px;}
-.glog-lbl{color:var(--gold);}
+.glog-name{color:var(--cyan);min-width:64px;flex-shrink:0;}
+.glog-val{color:var(--text);font-size:.7rem;min-width:32px;text-align:center;flex-shrink:0;}
 .glog-mini-bar{flex:1;height:4px;background:var(--b1);border-radius:4px;overflow:hidden;}
-.glog-mini-fill{height:100%;border-radius:4px;transition:width .5s;}
+.glog-mini-fill{height:100%;border-radius:4px;}
+.glog-lbl{color:var(--gold);letter-spacing:.5px;flex-shrink:0;}
+
+/* ── SECRET BADGE ── */
+.secret-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:.6rem;letter-spacing:2px;padding:5px 11px;border-radius:20px;background:rgba(0,232,255,.07);border:1px solid rgba(0,232,255,.18);color:var(--cyan);margin-bottom:10px;}
 
 /* ── SCOREBOARD ── */
 .sbrow{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:7px;border:1px solid var(--b1);background:rgba(255,255,255,.02);margin-bottom:7px;transition:all .3s;}
@@ -228,20 +190,13 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 .sbname{font-family:var(--fm);font-size:.74rem;color:var(--text);}
 .sbpts{font-family:var(--fh);font-size:1.22rem;letter-spacing:2px;color:var(--gold);}
 
-/* my secret reminder badge */
-.secret-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  font-family:var(--fm);font-size:.6rem;letter-spacing:2px;
-  padding:5px 11px;border-radius:20px;
-  background:rgba(0,232,255,.07);border:1px solid rgba(0,232,255,.18);
-  color:var(--cyan);margin-bottom:10px;
-}
-
 @media(max-width:640px){aside{display:none;}main{padding:12px;}.card{padding:16px 14px;}}
 </style>
 </head>
 <body>
-<div class="orb o1"></div><div class="orb o2"></div>
+
+<!-- LIVE ANIMATED BACKGROUND -->
+<canvas id="bg-canvas"></canvas>
 <div id="bf"></div>
 
 <aside>
@@ -251,7 +206,7 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 
 <main>
 
-<!-- ══ MENU ══ -->
+<!-- MENU -->
 <div id="screen-menu" class="screen active">
   <div class="card">
     <div class="hero"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="hnum" id="menu-n">42</div></div>
@@ -265,23 +220,21 @@ button:disabled{opacity:.25;cursor:not-allowed;}
     <p style="font-family:var(--fm);font-size:.62rem;color:var(--muted);text-align:center;line-height:2.15;">
       Each player secretly picks a number (1–Range).<br>
       On your turn → just type any number.<br>
-      Host checks it against <em style="color:var(--text)">ALL</em> players' secrets.<br>
-      Everyone sees: <span style="color:var(--cyan)">"Player X is 67% close to someone's number"</span><br>
+      Everyone sees: <span style="color:var(--cyan)">"Player X is HOT 🔥 to someone's number"</span><br>
       <span style="color:var(--pink)">Whose number? Nobody knows!</span><br>
-      Exact match → that player eliminated · <span style="color:var(--gold)">+10 pts</span><br>
+      Exact match → eliminated · <span style="color:var(--gold)">+10 pts</span><br>
       Last survivor = <span style="color:var(--gold)">players × 5 bonus</span> · Highest score wins
     </p>
   </div>
 </div>
 
-<!-- ══ HOST ══ -->
+<!-- HOST -->
 <div id="screen-host" class="screen">
   <div class="card">
     <div class="title" style="font-size:2.2rem;margin-bottom:2px;">Create Room</div>
     <div class="sub">Host Settings</div>
     <div class="field"><label>Your Callsign</label><input type="text" id="host-name" placeholder="Enter alias" maxlength="14"></div>
-    <div class="field">
-      <label>Number Range</label>
+    <div class="field"><label>Number Range</label>
       <select id="host-range">
         <option value="100">1 – 100</option>
         <option value="500">1 – 500</option>
@@ -295,7 +248,7 @@ button:disabled{opacity:.25;cursor:not-allowed;}
   </div>
 </div>
 
-<!-- ══ JOIN ══ -->
+<!-- JOIN -->
 <div id="screen-join" class="screen">
   <div class="card">
     <div class="title" style="font-size:2.2rem;margin-bottom:2px;">Join Room</div>
@@ -313,7 +266,7 @@ button:disabled{opacity:.25;cursor:not-allowed;}
   </div>
 </div>
 
-<!-- ══ LOBBY ══ -->
+<!-- LOBBY -->
 <div id="screen-lobby" class="screen">
   <div class="card">
     <div class="rbox"><div class="rlbl">Room Code — Share with friends</div><div class="rval" id="disp-code">----</div></div>
@@ -325,14 +278,14 @@ button:disabled{opacity:.25;cursor:not-allowed;}
   </div>
 </div>
 
-<!-- ══ PICK SECRET ══ -->
+<!-- PICK SECRET -->
 <div id="screen-pick" class="screen">
   <div class="card">
     <div class="title" style="font-size:2rem;margin-bottom:2px;">Your Secret</div>
     <div class="sub">Pick your hidden number</div>
     <p style="font-family:var(--fm);font-size:.65rem;color:var(--muted);text-align:center;line-height:1.95;margin-bottom:16px;">
       Choose any number between <strong id="pick-range" style="color:var(--cyan)">1 – 100</strong>.<br>
-      Other players will guess numbers — you'll see if they get close to yours.<br>
+      Other players will guess — you'll feel them getting close.<br>
       <span style="color:var(--pink)">Nobody knows whose number they're hitting. 🤫</span>
     </p>
     <div class="field"><label>Your Secret Number</label><input type="number" id="secret-in" placeholder="???" min="1"></div>
@@ -343,24 +296,16 @@ button:disabled{opacity:.25;cursor:not-allowed;}
   </div>
 </div>
 
-<!-- ══ GAME ══ -->
+<!-- GAME -->
 <div id="screen-game" class="screen">
   <div class="card">
-
-    <!-- Turn banner -->
     <div class="tbanner" id="tbanner">…</div>
-
-    <!-- My secret reminder -->
     <div id="secret-badge-wrap" style="text-align:center;margin-bottom:10px;display:none;">
       <span class="secret-badge">🔒 Your secret: <span id="secret-badge-val" style="color:var(--green);margin-left:4px;"></span></span>
     </div>
-
-    <!-- BROADCAST — the main event, seen by everyone -->
     <div id="bcast" class="bcast" style="display:none;"></div>
-
-    <!-- Active guesser: just a number input, no target picking -->
     <div id="active-area" style="display:none;">
-      <div class="slbl" style="margin-top:2px;">Type any number — highest match wins</div>
+      <div class="slbl" style="margin-top:2px;">Type any number</div>
       <div class="ginput">
         <input type="number" id="guess-in" placeholder="???" min="1"
           onkeydown="if(event.key==='Enter')submitGuess()">
@@ -368,27 +313,22 @@ button:disabled{opacity:.25;cursor:not-allowed;}
       </div>
       <div class="ginput-hint" id="range-hint">Range: 1 – 100</div>
     </div>
-
-    <!-- Waiting -->
     <div id="wait-area" style="display:none;">
       <div class="wbox"><div class="spin"></div>
         <p style="font-family:var(--fm);font-size:.62rem;color:var(--muted);letter-spacing:3px;">AWAITING GUESS…</p>
       </div>
     </div>
-
-    <!-- History log -->
     <div id="glog-wrap" style="display:none;margin-top:6px;">
       <div class="slbl">Guess History</div>
       <div class="glog" id="glog"></div>
     </div>
-
     <div class="dv"></div>
     <div class="slbl">Players</div>
     <div class="pgrid" id="game-players"></div>
   </div>
 </div>
 
-<!-- ══ END ══ -->
+<!-- END -->
 <div id="screen-end" class="screen">
   <div class="card">
     <div style="text-align:center;font-size:2.5rem;margin-bottom:6px;">🏆</div>
@@ -401,15 +341,200 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 </div>
 
 </main>
+
 <script>
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// LIVE ANIMATED BACKGROUND (Canvas)
+// ═══════════════════════════════════════════════════
+(function(){
+  const cv = document.getElementById('bg-canvas');
+  const cx = cv.getContext('2d');
+  let W, H, t = 0;
+
+  const COLS = ['#00e8ff','#9b5de5','#ff1a6c','#ffc800','#00ff88'];
+
+  // Particles
+  const pts = Array.from({length:60}, () => ({
+    x: Math.random() * 1800 - 400,
+    y: Math.random() * 1200 - 200,
+    vx: (Math.random() - .5) * .5,
+    vy: (Math.random() - .5) * .5,
+    r: Math.random() * 1.8 + .4,
+    col: COLS[Math.floor(Math.random() * COLS.length)],
+    a: Math.random() * .6 + .2,
+    ph: Math.random() * Math.PI * 2,
+  }));
+
+  // Drifting glow orbs
+  const orbs = [
+    {x:0,   y:0,   dx:.4, dy:.25,  r:320, col:'#00e8ff', a:.055},
+    {x:1800,y:900, dx:-.3,dy:-.2,  r:280, col:'#9b5de5', a:.045},
+    {x:900, y:-200,dx:.2, dy:.35,  r:250, col:'#ff1a6c', a:.035},
+    {x:200, y:800, dx:.35,dy:-.18, r:200, col:'#ffc800', a:.025},
+  ];
+
+  function resize(){
+    W = cv.width  = window.innerWidth;
+    H = cv.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function frame(){
+    cx.clearRect(0, 0, W, H);
+    t += .014;
+
+    // ── cyber grid ──
+    cx.save();
+    const GRID = 72;
+    cx.lineWidth = .8;
+    // faint static grid
+    cx.strokeStyle = 'rgba(0,232,255,0.035)';
+    for(let x = 0; x < W; x += GRID){ cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x,H); cx.stroke(); }
+    for(let y = 0; y < H; y += GRID){ cx.beginPath(); cx.moveTo(0,y); cx.lineTo(W,y); cx.stroke(); }
+    // two pulsing highlight lines
+    cx.strokeStyle = `rgba(0,232,255,${.06 + Math.sin(t) * .03})`;
+    cx.lineWidth = 1.5;
+    const hx = ((Math.sin(t * .4) * .5 + .5) * W);
+    cx.beginPath(); cx.moveTo(hx, 0); cx.lineTo(hx, H); cx.stroke();
+    const hy = ((Math.cos(t * .3) * .5 + .5) * H);
+    cx.beginPath(); cx.moveTo(0, hy); cx.lineTo(W, hy); cx.stroke();
+    cx.restore();
+
+    // ── drifting orbs ──
+    orbs.forEach(o => {
+      o.x += o.dx; o.y += o.dy;
+      if(o.x < -o.r * 2) o.x = W + o.r;
+      if(o.x > W + o.r * 2) o.x = -o.r;
+      if(o.y < -o.r * 2) o.y = H + o.r;
+      if(o.y > H + o.r * 2) o.y = -o.r;
+      const pulse = o.r * (1 + Math.sin(t * .7 + o.x * .002) * .12);
+      const g = cx.createRadialGradient(o.x, o.y, 0, o.x, o.y, pulse);
+      g.addColorStop(0, o.col);
+      g.addColorStop(1, 'transparent');
+      cx.save();
+      cx.globalAlpha = o.a;
+      cx.fillStyle = g;
+      cx.beginPath(); cx.arc(o.x, o.y, pulse, 0, Math.PI*2); cx.fill();
+      cx.restore();
+    });
+
+    // ── particles + connection lines ──
+    pts.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.ph += .025;
+      if(p.x < -10) p.x = W + 10;
+      if(p.x > W+10) p.x = -10;
+      if(p.y < -10) p.y = H + 10;
+      if(p.y > H+10) p.y = -10;
+    });
+
+    // lines between close particles
+    cx.save();
+    for(let i = 0; i < pts.length; i++){
+      for(let j = i+1; j < pts.length; j++){
+        const dx = pts[i].x - pts[j].x;
+        const dy = pts[i].y - pts[j].y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if(d < 115){
+          cx.globalAlpha = (1 - d/115) * .09;
+          cx.strokeStyle = pts[i].col;
+          cx.lineWidth   = .6;
+          cx.beginPath();
+          cx.moveTo(pts[i].x, pts[i].y);
+          cx.lineTo(pts[j].x, pts[j].y);
+          cx.stroke();
+        }
+      }
+    }
+    cx.restore();
+
+    // particle dots
+    pts.forEach(p => {
+      const a = Math.max(0, (p.a + Math.sin(p.ph) * .18) * .85);
+      cx.save();
+      cx.globalAlpha  = a;
+      cx.fillStyle    = p.col;
+      cx.shadowColor  = p.col;
+      cx.shadowBlur   = 10;
+      cx.beginPath();
+      cx.arc(p.x, p.y, p.r * (1 + Math.sin(p.ph) * .25), 0, Math.PI*2);
+      cx.fill();
+      cx.restore();
+    });
+
+    // ── horizontal scan line ──
+    const scanY = ((t * 30) % (H + 20)) - 10;
+    cx.save();
+    const sg = cx.createLinearGradient(0, scanY - 8, 0, scanY + 8);
+    sg.addColorStop(0, 'transparent');
+    sg.addColorStop(.5, '#00e8ff');
+    sg.addColorStop(1, 'transparent');
+    cx.globalAlpha = .055;
+    cx.fillStyle   = sg;
+    cx.fillRect(0, scanY - 8, W, 16);
+    cx.restore();
+
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+// ═══════════════════════════════════════════════════
+// SOUND ENGINE (Web Audio API)
+// ═══════════════════════════════════════════════════
+let _ac = null;
+function ac(){ if(!_ac) _ac = new (window.AudioContext || window.webkitAudioContext)(); return _ac; }
+
+function tone(freq, type='sine', dur=.12, vol=.15, delay=0){
+  try{
+    const a = ac(), o = a.createOscillator(), g = a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.type = type; o.frequency.value = freq;
+    const t = a.currentTime + delay;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + .012);
+    g.gain.exponentialRampToValueAtTime(.001, t + dur);
+    o.start(t); o.stop(t + dur + .05);
+  }catch(e){}
+}
+
+// Named sounds
+const SFX = {
+  click:    ()=>{ tone(440,'square',.055,.1); },
+  join:     ()=>{ tone(520,'sine',.1,.13); setTimeout(()=>tone(660,'sine',.12,.13),120); },
+  lock:     ()=>{ tone(620,'sine',.09,.15); setTimeout(()=>tone(820,'sine',.14,.15),110); },
+  start:    ()=>{ [200,300,420,600].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.16,.17),i*90)); },
+  myTurn:   ()=>{ tone(660,'sine',.07,.13); setTimeout(()=>tone(880,'sine',.1,.13),100); },
+  guess:    ()=>{ tone(300,'sawtooth',.07,.09); },
+  ice:      ()=>{ tone(180,'sine',.22,.11); },
+  cool:     ()=>{ tone(260,'sine',.13,.12); setTimeout(()=>tone(310,'sine',.13,.1),90); },
+  warm:     ()=>{ tone(430,'sine',.1,.14); setTimeout(()=>tone(520,'sine',.1,.14),80); },
+  hot:      ()=>{ [580,720,880].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.09,.16),i*65)); },
+  burning:  ()=>{ [600,780,960,1140].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.09,.17),i*55)); },
+  elim:     ()=>{ [320,260,200,150].forEach((f,i)=>setTimeout(()=>tone(f,'sawtooth',.15,.18),i*75)); setTimeout(()=>tone(100,'square',.45,.25),310); },
+  win:      ()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.28,.22),i*140)); setTimeout(()=>{ [784,988,1175].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.3,.2),i*100)); },640); },
+};
+
+function sndForPct(pct){
+  if(pct===100)       SFX.elim();
+  else if(pct>=90)    SFX.burning();
+  else if(pct>=75)    SFX.hot();
+  else if(pct>=55)    SFX.warm();
+  else if(pct>=35)    SFX.cool();
+  else                SFX.ice();
+}
+
+// Click sound on all buttons
+document.addEventListener('click', e=>{ if(e.target.closest('button')) SFX.click(); });
+
+// ═══════════════════════════════════════════════════
 // STATE
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 const ME = { id: uid(), name: '', isHost: false };
 
 let GS = {
   roomId: null, range: 100, status: 'lobby',
-  players: [],     // {id,name,isHost,score,eliminated}
+  players: [],
   secrets: {},     // HOST ONLY — never broadcast
   picksReady: [],
   activeTurnId: null,
@@ -420,422 +545,369 @@ let GS = {
 let mySecret = null;
 let peer = null, conns = [], hostConn = null;
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // UTILS
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function uid(){ return Math.random().toString(36).substr(2,9); }
 function roomCode(){ return Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*23)]).join(''); }
 function goS(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById('screen-'+id).classList.add('active'); }
 function L(msg,t=''){ const d=document.createElement('div'); d.className='le '+t; d.innerHTML=msg; const el=document.getElementById('log'); el.prepend(d); while(el.children.length>60)el.lastChild.remove(); }
 function BF(txt,color){ const el=document.getElementById('bf'); el.innerHTML=txt; el.style.color=color; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); }
 
-// Proximity: 0–100%
 function prox(guess, secret, range){
-  return Math.max(0, Math.min(100, Math.round((1 - Math.abs(guess - secret) / range) * 100)));
+  return Math.max(0, Math.min(100, Math.round((1 - Math.abs(guess-secret)/range)*100)));
 }
 
-// Label + color from %
+// NO % in labels — pure text + emoji only
 function proxInfo(pct){
-  if(pct===100) return {txt:'EXACT HIT! 🎯',    color:'var(--green)'};
-  if(pct>=90)   return {txt:`${pct}% · BURNING 🔥`, color:'var(--green)'};
-  if(pct>=75)   return {txt:`${pct}% · HOT ♨️`,     color:'#aaff00'};
-  if(pct>=55)   return {txt:`${pct}% · WARM 🌤️`,    color:'var(--gold)'};
-  if(pct>=35)   return {txt:`${pct}% · COOL 🌊`,    color:'var(--blue)'};
-  return              {txt:`${pct}% · ICE ❄️`,      color:'var(--muted)'};
-}
-
-function barGrad(pct){
-  if(pct>=90) return 'linear-gradient(90deg,#00c855,var(--green))';
-  if(pct>=75) return 'linear-gradient(90deg,#aaff00,#00e880)';
-  if(pct>=55) return 'linear-gradient(90deg,#ff9500,var(--gold))';
-  if(pct>=35) return 'linear-gradient(90deg,#2272ff,var(--blue))';
-  return 'linear-gradient(90deg,#1e2240,#2a3060)';
+  if(pct===100) return {txt:'EXACT HIT! 🎯',  color:'var(--green)', grad:'linear-gradient(90deg,#00c855,var(--green))'};
+  if(pct>=90)   return {txt:'ON FIRE 🔥🔥',    color:'var(--green)', grad:'linear-gradient(90deg,#00c855,#aaff00)'};
+  if(pct>=75)   return {txt:'HOT ♨️',           color:'#aaff00',      grad:'linear-gradient(90deg,#aaff00,#00e880)'};
+  if(pct>=55)   return {txt:'WARM 🌤️',         color:'var(--gold)',  grad:'linear-gradient(90deg,#ff9500,var(--gold))'};
+  if(pct>=35)   return {txt:'COOL 🌊',          color:'var(--blue)',  grad:'linear-gradient(90deg,#2272ff,var(--blue))'};
+  return              {txt:'ICE COLD ❄️',       color:'var(--muted)', grad:'linear-gradient(90deg,#1e2240,#2a3060)'};
 }
 
 setInterval(()=>{ document.getElementById('menu-n').textContent=Math.floor(Math.random()*99)+1; },1100);
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // HOST
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function createRoom(){
-  ME.name=document.getElementById('host-name').value.trim()||'Host';
-  ME.isHost=true;
-  GS.range=parseInt(document.getElementById('host-range').value);
-  GS.roomId=roomCode();
-  GS.players=[{id:ME.id,name:ME.name,isHost:true,score:0,eliminated:false}];
+  ME.name = document.getElementById('host-name').value.trim() || 'Host';
+  ME.isHost = true;
+  GS.range = parseInt(document.getElementById('host-range').value);
+  GS.roomId = roomCode();
+  GS.players = [{id:ME.id, name:ME.name, isHost:true, score:0, eliminated:false}];
   L('Connecting to broker…','i');
-  peer=new Peer('nexus-'+GS.roomId);
-  peer.on('open',()=>{ L(`Room <b>${GS.roomId}</b> ready`,'ok'); updateLobby(); goS('lobby'); });
-  peer.on('error',e=>L('Error: '+e.type,'bad'));
-  peer.on('connection',conn=>{
+  peer = new Peer('nexus-'+GS.roomId);
+  peer.on('open', ()=>{ L(`Room <b>${GS.roomId}</b> ready`,'ok'); SFX.join(); updateLobby(); goS('lobby'); });
+  peer.on('error', e=>L('Error: '+e.type,'bad'));
+  peer.on('connection', conn=>{
     conns.push(conn);
-    conn.on('data',d=>hostReceive(conn,d));
-    conn.on('close',()=>{
-      conns=conns.filter(c=>c!==conn);
+    conn.on('data', d=>hostReceive(conn,d));
+    conn.on('close', ()=>{
+      conns = conns.filter(c=>c!==conn);
       if(conn._gid){ GS.players=GS.players.filter(p=>p.id!==conn._gid); delete GS.secrets[conn._gid]; broadcast(); }
     });
   });
 }
 
-function hostReceive(conn,data){
+function hostReceive(conn, data){
   if(data.type==='JOIN'){
-    conn._gid=data.id;
-    GS.players.push({id:data.id,name:data.name,isHost:false,score:0,eliminated:false});
-    L(`<b>${data.name}</b> joined`,'ok');
+    conn._gid = data.id;
+    GS.players.push({id:data.id, name:data.name, isHost:false, score:0, eliminated:false});
+    L(`<b>${data.name}</b> joined`,'ok'); SFX.join();
     broadcast();
   }
   if(data.type==='SECRET'){
-    GS.secrets[data.id]=data.secret;
+    GS.secrets[data.id] = data.secret;
     if(!GS.picksReady.includes(data.id)) GS.picksReady.push(data.id);
-    const p=GS.players.find(x=>x.id===data.id);
-    L(`<b>${p?p.name:'?'}</b> locked in`,'i');
+    const p = GS.players.find(x=>x.id===data.id);
+    L(`<b>${p?p.name:'?'}</b> locked in`,'i'); SFX.lock();
     checkAllPicked();
   }
-  if(data.type==='GUESS'){
-    hostHandleGuess(data.guesserId, data.value);
-  }
+  if(data.type==='GUESS') hostHandleGuess(data.guesserId, data.value);
 }
 
 function broadcast(extra){
   updateLobby(); updateGameUI();
-  const safe={...GS, secrets:{}};
-  conns.forEach(c=>{ try{ c.send({type:'STATE',state:safe,...(extra||{})}); }catch(e){} });
+  const safe = {...GS, secrets:{}};
+  conns.forEach(c=>{ try{ c.send({type:'STATE', state:safe, ...(extra||{})}); }catch(e){} });
 }
 
 function pushAll(obj){
-  // Show locally on host
   if(obj.bfText) BF(obj.bfText, obj.bfColor);
   if(obj.logMsg) L(obj.logMsg, obj.logType||'');
-  if(obj.result) renderBcast(obj.result);
-  if(obj.guessLog) GS.guessLog=obj.guessLog;
+  if(obj.result){ renderBcast(obj.result); sndForPct(obj.result.pct); }
+  if(obj.guessLog) GS.guessLog = obj.guessLog;
   updateGameUI();
-  // Push to guests
-  conns.forEach(c=>{ try{ c.send({type:'FEEDBACK',...obj}); }catch(e){} });
+  conns.forEach(c=>{ try{ c.send({type:'FEEDBACK', ...obj}); }catch(e){} });
 }
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // GUEST
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function joinRoom(){
-  const code=document.getElementById('join-code').value.trim().toUpperCase();
-  const name=document.getElementById('join-name').value.trim()||'Guest';
-  if(!code||code.length!==4){alert('Enter a 4-letter room code.');return;}
-  ME.name=name; ME.isHost=false;
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  const name = document.getElementById('join-name').value.trim() || 'Guest';
+  if(!code||code.length!==4){ alert('Enter a 4-letter room code.'); return; }
+  ME.name = name; ME.isHost = false;
   L('Searching for '+code+'…','i');
-  peer=new Peer();
-  peer.on('open',()=>{
-    hostConn=peer.connect('nexus-'+code);
-    hostConn.on('open',()=>{ L('Connected!','ok'); hostConn.send({type:'JOIN',id:ME.id,name}); goS('lobby'); });
-    hostConn.on('data',guestReceive);
-    hostConn.on('error',()=>L('Connection error','bad'));
-    hostConn.on('close',()=>L('Disconnected','bad'));
+  peer = new Peer();
+  peer.on('open', ()=>{
+    hostConn = peer.connect('nexus-'+code);
+    hostConn.on('open', ()=>{ L('Connected!','ok'); SFX.join(); hostConn.send({type:'JOIN',id:ME.id,name}); goS('lobby'); });
+    hostConn.on('data', guestReceive);
+    hostConn.on('error', ()=>L('Connection error','bad'));
+    hostConn.on('close', ()=>L('Disconnected','bad'));
   });
-  peer.on('error',e=>{ L('Error: '+e.type,'bad'); if(e.type==='peer-unavailable')alert('Room not found! Check the code.'); });
+  peer.on('error', e=>{ L('Error: '+e.type,'bad'); if(e.type==='peer-unavailable') alert('Room not found! Check the code.'); });
 }
 
 function guestReceive(data){
   if(data.type==='STATE'){
-    const prev=GS.status;
-    GS=data.state;
-    if(GS.status==='pick'&&prev!=='pick'){ initPickScreen(); goS('pick'); }
-    if(GS.status==='playing'&&prev!=='playing') goS('game');
+    const prev = GS.status;
+    GS = data.state;
+    if(GS.status==='pick' && prev!=='pick'){ initPickScreen(); goS('pick'); SFX.start(); }
+    if(GS.status==='playing' && prev!=='playing'){ goS('game'); SFX.start(); }
     if(GS.status==='ended') showEndScreen();
     updateLobby(); updateGameUI();
   }
   if(data.type==='FEEDBACK'){
     if(data.bfText) BF(data.bfText, data.bfColor);
     if(data.logMsg) L(data.logMsg, data.logType||'');
-    if(data.result) renderBcast(data.result);
-    if(data.guessLog) GS.guessLog=data.guessLog;
+    if(data.result){ renderBcast(data.result); sndForPct(data.result.pct); }
+    if(data.guessLog) GS.guessLog = data.guessLog;
     updateGameUI();
   }
 }
 
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 // GAME FLOW
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 function hostStartGame(){
   if(!ME.isHost) return;
   GS.status='pick'; GS.picksReady=[]; GS.secrets={}; GS.guessLog=[];
-  GS.startCount=GS.players.length;
-  GS.players.forEach(p=>{p.score=0;p.eliminated=false;});
-  broadcast(); initPickScreen(); goS('pick');
+  GS.startCount = GS.players.length;
+  GS.players.forEach(p=>{ p.score=0; p.eliminated=false; });
+  SFX.start(); broadcast(); initPickScreen(); goS('pick');
 }
 
 function initPickScreen(){
-  document.getElementById('pick-range').textContent=`1 – ${GS.range}`;
-  document.getElementById('secret-in').max=GS.range;
-  document.getElementById('secret-in').min=1;
-  document.getElementById('secret-in').value='';
-  document.getElementById('secret-in').disabled=false;
-  document.getElementById('btn-lock').disabled=false;
-  document.getElementById('lock-wait').style.display='none';
+  document.getElementById('pick-range').textContent = `1 – ${GS.range}`;
+  document.getElementById('secret-in').max = GS.range;
+  document.getElementById('secret-in').min = 1;
+  document.getElementById('secret-in').value = '';
+  document.getElementById('secret-in').disabled = false;
+  document.getElementById('btn-lock').disabled = false;
+  document.getElementById('lock-wait').style.display = 'none';
 }
 
 function lockSecret(){
-  const v=parseInt(document.getElementById('secret-in').value);
-  if(isNaN(v)||v<1||v>GS.range){alert(`Pick a number between 1 and ${GS.range}`);return;}
-  mySecret=v;
-  document.getElementById('secret-in').disabled=true;
-  document.getElementById('btn-lock').disabled=true;
-  document.getElementById('lock-wait').style.display='block';
+  const v = parseInt(document.getElementById('secret-in').value);
+  if(isNaN(v)||v<1||v>GS.range){ alert(`Pick a number between 1 and ${GS.range}`); return; }
+  mySecret = v;
+  document.getElementById('secret-in').disabled = true;
+  document.getElementById('btn-lock').disabled = true;
+  document.getElementById('lock-wait').style.display = 'block';
+  SFX.lock();
   if(ME.isHost){
-    GS.secrets[ME.id]=v;
+    GS.secrets[ME.id] = v;
     if(!GS.picksReady.includes(ME.id)) GS.picksReady.push(ME.id);
     L('You locked your number','i');
     checkAllPicked();
   } else {
-    hostConn.send({type:'SECRET',id:ME.id,secret:v});
+    hostConn.send({type:'SECRET', id:ME.id, secret:v});
     L('Number locked, waiting for others…','i');
   }
 }
 
 function checkAllPicked(){
-  if(GS.picksReady.length>=GS.players.length){
+  if(GS.picksReady.length >= GS.players.length){
     L('All locked! Game starting…','ok');
-    GS.status='playing';
-    GS.activeTurnId=GS.players.filter(p=>!p.eliminated)[0].id;
+    SFX.start();
+    GS.status = 'playing';
+    GS.activeTurnId = GS.players.filter(p=>!p.eliminated)[0].id;
     broadcast(); goS('game'); updateGameUI();
   }
 }
 
-// ── CORE GUESS HANDLER ──
-// No target — check guess against ALL alive players (except guesser)
-// Find highest proximity among all. If exact match found, eliminate that player.
+let _lastTurn = null;
+
 function hostHandleGuess(guesserId, value){
-  const guesser=GS.players.find(p=>p.id===guesserId);
+  const guesser = GS.players.find(p=>p.id===guesserId);
   if(!guesser) return;
 
-  // Check against all alive players (not the guesser themselves)
-  const targets=GS.players.filter(p=>!p.eliminated && p.id!==guesserId);
-
-  // Calculate proximity for each target
-  let bestPct=0, eliminatedPlayer=null;
+  const targets = GS.players.filter(p=>!p.eliminated && p.id!==guesserId);
+  let bestPct = 0, eliminated = null;
 
   targets.forEach(t=>{
-    const secret=GS.secrets[t.id];
-    if(secret===undefined) return;
-    const pct=prox(value,secret,GS.range);
-    if(pct>bestPct) bestPct=pct;
-    if(pct===100) eliminatedPlayer=t;
+    const s = GS.secrets[t.id];
+    if(s===undefined) return;
+    const p = prox(value, s, GS.range);
+    if(p > bestPct) bestPct = p;
+    if(p === 100) eliminated = t;
   });
 
-  const info=proxInfo(bestPct);
-
-  // Build the broadcast result — only shows guesser name, value, highest %, and label
-  // WHO it's close to is intentionally hidden
-  const result={
-    guesserName: guesser.name,
-    guessValue:  value,
-    pct:         bestPct,
-    label:       info.txt,
-    color:       info.color,
-    correct:     bestPct===100,
-    eliminatedName: eliminatedPlayer ? eliminatedPlayer.name : null,
+  const info = proxInfo(bestPct);
+  const result = {
+    guesserName:    guesser.name,
+    guessValue:     value,
+    pct:            bestPct,
+    label:          info.txt,
+    color:          info.color,
+    grad:           info.grad,
+    correct:        bestPct === 100,
+    eliminatedName: eliminated ? eliminated.name : null,
   };
 
-  // Update guess log
-  GS.guessLog.unshift({
-    guesserName: guesser.name,
-    value,
-    pct: bestPct,
-    label: info.txt,
-  });
-  if(GS.guessLog.length>8) GS.guessLog.pop();
+  GS.guessLog.unshift({ guesserName:guesser.name, value, pct:bestPct, label:info.txt, color:info.color, grad:info.grad });
+  if(GS.guessLog.length > 8) GS.guessLog.pop();
 
-  if(bestPct===100 && eliminatedPlayer){
-    // ── EXACT MATCH → ELIMINATE ──
-    guesser.score+=10;
-    eliminatedPlayer.eliminated=true;
-
-    const logMsg=`🎯 <b>${guesser.name}</b> eliminated <b>${eliminatedPlayer.name}</b>! Guessed ${value} · +10 pts`;
+  if(bestPct === 100 && eliminated){
+    guesser.score += 10;
+    eliminated.eliminated = true;
+    const logMsg = `🎯 <b>${guesser.name}</b> eliminated <b>${eliminated.name}</b>! +10 pts`;
     L(logMsg,'ok');
-
-    const alive=GS.players.filter(p=>!p.eliminated);
-    if(alive.length===1){
-      // Last survivor
-      const bonus=GS.startCount*5;
-      alive[0].score+=bonus;
-      GS.status='ended';
-      pushAll({
-        bfText:`+${bonus} SURVIVOR!`,bfColor:'var(--gold)',
-        logMsg:`🏆 <b>${alive[0].name}</b> last standing! +${bonus} pts`,logType:'g',
-        result, guessLog:GS.guessLog,
-      });
+    const alive = GS.players.filter(p=>!p.eliminated);
+    if(alive.length === 1){
+      const bonus = GS.startCount * 5;
+      alive[0].score += bonus;
+      GS.status = 'ended';
+      pushAll({ bfText:`+${bonus} SURVIVOR!`, bfColor:'var(--gold)', logMsg:`🏆 <b>${alive[0].name}</b> last standing! +${bonus} pts`, logType:'g', result, guessLog:GS.guessLog });
       broadcast({result});
-      setTimeout(()=>showEndScreen(),2000);
+      setTimeout(()=>{ SFX.win(); showEndScreen(); }, 1000);
       return;
     }
-
-    pushAll({
-      bfText:'ELIMINATED! +10',bfColor:'var(--green)',
-      logMsg,logType:'ok',
-      result,guessLog:GS.guessLog,
-    });
-    advanceTurn(guesserId);
-    broadcast({result});
-
+    pushAll({ bfText:'ELIMINATED! +10', bfColor:'var(--green)', logMsg, logType:'ok', result, guessLog:GS.guessLog });
+    advanceTurn(guesserId); broadcast({result});
   } else {
-    // ── WRONG GUESS — show proximity to everyone, turn advances ──
-    const logMsg=`<b>${guesser.name}</b> guessed ${value} → ${info.txt}`;
+    const logMsg = `<b>${guesser.name}</b> guessed ${value} → ${info.txt}`;
     L(logMsg);
-    pushAll({logMsg, result, guessLog:GS.guessLog});
-    advanceTurn(guesserId);
-    broadcast({result});
+    pushAll({ logMsg, result, guessLog:GS.guessLog });
+    advanceTurn(guesserId); broadcast({result});
   }
 }
 
 function advanceTurn(currentId){
-  const alive=GS.players.filter(p=>!p.eliminated);
+  const alive = GS.players.filter(p=>!p.eliminated);
   if(!alive.length) return;
-  const idx=alive.findIndex(p=>p.id===currentId);
-  GS.activeTurnId=alive[(idx+1)%alive.length].id;
+  const idx = alive.findIndex(p=>p.id===currentId);
+  GS.activeTurnId = alive[(idx+1) % alive.length].id;
 }
 
 function submitGuess(){
-  const v=parseInt(document.getElementById('guess-in').value);
+  const v = parseInt(document.getElementById('guess-in').value);
   if(isNaN(v)||v<1) return;
-  document.getElementById('guess-in').value='';
+  document.getElementById('guess-in').value = '';
+  SFX.guess();
   if(ME.isHost) hostHandleGuess(ME.id, v);
-  else hostConn.send({type:'GUESS',guesserId:ME.id,value:v});
+  else hostConn.send({type:'GUESS', guesserId:ME.id, value:v});
 }
 
-// ══════════════════════════════════════════════
-// UI RENDERERS
-// ══════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// UI
+// ═══════════════════════════════════════════════════
 function updateLobby(){
-  document.getElementById('disp-code').textContent=GS.roomId||'----';
-  const cont=document.getElementById('lobby-players');
-  cont.innerHTML='';
+  document.getElementById('disp-code').textContent = GS.roomId || '----';
+  const cont = document.getElementById('lobby-players');
+  cont.innerHTML = '';
   GS.players.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='pc'+(p.isHost?' host':'');
-    d.textContent=p.name;
+    const d = document.createElement('div');
+    d.className = 'pc' + (p.isHost?' host':'');
+    d.textContent = p.name;
     cont.appendChild(d);
   });
   if(ME.isHost){
-    const btn=document.getElementById('btn-start');
-    const hint=document.getElementById('lobby-hint');
-    if(GS.players.length>=2){ btn.disabled=false; btn.textContent='▶ Start Game'; hint.textContent=''; }
+    const btn  = document.getElementById('btn-start');
+    const hint = document.getElementById('lobby-hint');
+    if(GS.players.length >= 2){ btn.disabled=false; btn.textContent='▶ Start Game'; hint.textContent=''; }
     else{ btn.disabled=true; btn.textContent='Waiting for players…'; hint.textContent='Need at least 2 players'; }
   } else {
-    document.getElementById('btn-start').disabled=true;
-    document.getElementById('btn-start').textContent='Host will start the game…';
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-start').textContent = 'Host will start the game…';
   }
 }
 
 function updateGameUI(){
-  if(GS.status!=='playing') return;
-
-  const isMyTurn=GS.activeTurnId===ME.id;
-  const active=GS.players.find(p=>p.id===GS.activeTurnId);
-  const banner=document.getElementById('tbanner');
+  if(GS.status !== 'playing') return;
+  const isMyTurn = GS.activeTurnId === ME.id;
+  const active   = GS.players.find(p=>p.id===GS.activeTurnId);
+  const banner   = document.getElementById('tbanner');
 
   if(isMyTurn){
-    banner.textContent='▶ YOUR TURN — ENTER A NUMBER';
-    banner.style.cssText='color:var(--green);background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);';
+    banner.textContent = '▶ YOUR TURN — ENTER A NUMBER';
+    banner.style.cssText = 'color:var(--green);background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.2);';
+    if(_lastTurn !== GS.activeTurnId){ SFX.myTurn(); _lastTurn = GS.activeTurnId; }
   } else {
-    banner.textContent=`${active?active.name:'?'}'s Turn`;
-    banner.style.cssText='color:var(--muted);background:transparent;border:1px solid var(--b1);';
+    banner.textContent = `${active?active.name:'?'}'s Turn`;
+    banner.style.cssText = 'color:var(--muted);background:transparent;border:1px solid var(--b1);';
+    _lastTurn = GS.activeTurnId;
   }
 
-  document.getElementById('active-area').style.display=isMyTurn?'block':'none';
-  document.getElementById('wait-area').style.display=isMyTurn?'none':'block';
-  document.getElementById('range-hint').textContent=`Range: 1 – ${GS.range}`;
+  document.getElementById('active-area').style.display = isMyTurn ? 'block' : 'none';
+  document.getElementById('wait-area').style.display   = isMyTurn ? 'none'  : 'block';
+  document.getElementById('range-hint').textContent = `Range: 1 – ${GS.range}`;
 
-  // Secret badge
-  if(mySecret!==null){
-    document.getElementById('secret-badge-wrap').style.display='block';
-    document.getElementById('secret-badge-val').textContent=mySecret;
+  if(mySecret !== null){
+    document.getElementById('secret-badge-wrap').style.display = 'block';
+    document.getElementById('secret-badge-val').textContent = mySecret;
   }
 
-  // Guess history
-  if(GS.guessLog&&GS.guessLog.length){
-    document.getElementById('glog-wrap').style.display='block';
-    const cont=document.getElementById('glog');
-    cont.innerHTML='';
+  // History — NO % numbers shown
+  if(GS.guessLog && GS.guessLog.length){
+    document.getElementById('glog-wrap').style.display = 'block';
+    const cont = document.getElementById('glog');
+    cont.innerHTML = '';
     GS.guessLog.slice(0,6).forEach(e=>{
-      const inf=proxInfo(e.pct);
-      const d=document.createElement('div');
-      d.className='glog-row'+(e.pct===100?' exact':'');
-      d.innerHTML=`
+      const d = document.createElement('div');
+      d.className = 'glog-row' + (e.pct===100?' exact':'');
+      d.innerHTML = `
         <span class="glog-name">${e.guesserName}</span>
         <span class="glog-val">${e.value}</span>
-        <div class="glog-mini-bar"><div class="glog-mini-fill" style="width:${e.pct}%;background:${barGrad(e.pct)}"></div></div>
-        <span class="glog-pct" style="color:${inf.color}">${e.pct}%</span>
-        <span class="glog-lbl">${e.label}</span>
+        <div class="glog-mini-bar"><div class="glog-mini-fill" style="width:${e.pct}%;background:${e.grad}"></div></div>
+        <span class="glog-lbl" style="color:${e.color}">${e.label}</span>
       `;
       cont.appendChild(d);
     });
   }
 
   // Player chips
-  const gp=document.getElementById('game-players');
-  gp.innerHTML='';
+  const gp = document.getElementById('game-players');
+  gp.innerHTML = '';
   GS.players.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='pc'+(p.isHost?' host':'')+(p.eliminated?' elim':'')+((!p.eliminated&&p.id===GS.activeTurnId)?' active-turn':'');
-    d.innerHTML=`${p.name}<span class="pts">${p.score} pts</span>`;
+    const d = document.createElement('div');
+    d.className = 'pc'+(p.isHost?' host':'')+(p.eliminated?' elim':'')+((!p.eliminated&&p.id===GS.activeTurnId)?' active-turn':'');
+    d.innerHTML = `${p.name}<span class="pts">${p.score} pts</span>`;
     gp.appendChild(d);
   });
 }
 
-// THE KEY FUNCTION — renders the broadcast seen by all players
-// Shows: who guessed, what number, highest % match, label
-// DOES NOT show whose number it matched
+// Broadcast render — NO % number, only bar + label
 function renderBcast(r){
-  const box=document.getElementById('bcast');
-  box.style.display='block';
-  box.className='bcast new-guess'+(r.correct?' exact-hit':'');
-  // force reflow for animation
+  const box = document.getElementById('bcast');
+  box.style.display = 'block';
+  box.className = 'bcast new-guess' + (r.correct?' exact-hit':'');
   void box.offsetWidth;
 
-  const info=proxInfo(r.pct);
-
-  box.innerHTML=`
+  box.innerHTML = `
     <div class="bcast-who">
       <span class="bcast-gname">${r.guesserName}</span>
       <span class="bcast-verb">guessed</span>
       <span class="bcast-num">${r.guessValue}</span>
     </div>
     <div class="prox-display">
-      <div class="prox-main">
-        <div class="prox-pct-big" style="color:${info.color}">${r.pct}%</div>
-        <div class="prox-bar-col">
-          <div class="prox-bar-track">
-            <div class="prox-bar-fill" style="width:0%;background:${barGrad(r.pct)}" id="pbar"></div>
-          </div>
-          <div class="prox-label" style="color:${info.color}">${info.txt}</div>
-        </div>
+      <div class="prox-bar-track">
+        <div class="prox-bar-fill" id="pbar" style="width:0%;background:${r.grad}"></div>
       </div>
-      ${r.correct
-        ? `<div class="prox-mystery" style="color:var(--green)">🎯 Exact match! <b>${r.eliminatedName}</b> is eliminated!</div>`
-        : `<div class="prox-mystery">Close to <b>someone's</b> number — but whose? 🤔</div>`
-      }
+      <div class="prox-label" style="color:${r.color}">${r.label}</div>
+      <div class="prox-mystery">
+        ${r.correct
+          ? `🎯 <b>${r.eliminatedName}</b> is eliminated!`
+          : `Close to <b>someone's</b> number — but whose? 🤔`}
+      </div>
     </div>
   `;
 
-  // Animate bar fill after render
-  setTimeout(()=>{
-    const bar=document.getElementById('pbar');
-    if(bar) bar.style.width=r.pct+'%';
-  }, 60);
+  setTimeout(()=>{ const b=document.getElementById('pbar'); if(b) b.style.width=r.pct+'%'; }, 60);
 }
 
 function showEndScreen(){
-  goS('end');
-  const sorted=[...GS.players].sort((a,b)=>b.score-a.score);
-  const sb=document.getElementById('scoreboard');
-  sb.innerHTML='';
+  goS('end'); SFX.win();
+  const sorted = [...GS.players].sort((a,b)=>b.score-a.score);
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
   sorted.forEach((p,i)=>{
-    const d=document.createElement('div');
-    d.className='sbrow'+(i===0?' top':'');
-    d.innerHTML=`
+    const d = document.createElement('div');
+    d.className = 'sbrow' + (i===0?' top':'');
+    d.innerHTML = `
       <div style="display:flex;align-items:center;">
         <div class="sbrank">${i+1}</div>
-        <div class="sbname">${p.name}${p.eliminated
-          ?'<span style="color:var(--pink);font-size:.53rem;margin-left:6px;letter-spacing:1px;">OUT</span>'
-          :'<span style="color:var(--green);font-size:.53rem;margin-left:6px;letter-spacing:1px;">SURVIVED</span>'}
+        <div class="sbname">${p.name}
+          ${p.eliminated
+            ?'<span style="color:var(--pink);font-size:.53rem;margin-left:6px;letter-spacing:1px;">OUT</span>'
+            :'<span style="color:var(--green);font-size:.53rem;margin-left:6px;letter-spacing:1px;">SURVIVED</span>'}
         </div>
       </div>
       <div class="sbpts">${p.score}</div>
@@ -846,15 +918,15 @@ function showEndScreen(){
 }
 
 function resetGame(){
-  mySecret=null;
+  mySecret = null; _lastTurn = null;
   GS.status='lobby'; GS.picksReady=[]; GS.secrets={}; GS.guessLog=[];
-  GS.players.forEach(p=>{p.score=0;p.eliminated=false;});
-  document.getElementById('bcast').style.display='none';
-  document.getElementById('glog-wrap').style.display='none';
-  document.getElementById('secret-badge-wrap').style.display='none';
-  document.getElementById('secret-in').disabled=false;
-  document.getElementById('btn-lock').disabled=false;
-  document.getElementById('lock-wait').style.display='none';
+  GS.players.forEach(p=>{ p.score=0; p.eliminated=false; });
+  document.getElementById('bcast').style.display = 'none';
+  document.getElementById('glog-wrap').style.display = 'none';
+  document.getElementById('secret-badge-wrap').style.display = 'none';
+  document.getElementById('secret-in').disabled = false;
+  document.getElementById('btn-lock').disabled = false;
+  document.getElementById('lock-wait').style.display = 'none';
   if(ME.isHost){ broadcast(); goS('lobby'); updateLobby(); }
   else goS('lobby');
 }
