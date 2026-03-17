@@ -1,384 +1,1139 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Number Nexus - Online P2P</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        /* [CSS IS EXACTLY THE SAME AS BEFORE] */
-        :root {
-            --bg-dark: #0a0a0f; --bg-panel: #161622; --accent-cyan: #00f0ff; 
-            --accent-pink: #ff0055; --accent-green: #00ff66; --accent-yellow: #ffd700;
-            --text-main: #ffffff; --text-muted: #888899; --font-main: 'Segoe UI', sans-serif;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-main); background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-        #history-sidebar { width: 350px; background-color: var(--bg-panel); border-right: 2px solid var(--accent-cyan); display: flex; flex-direction: column; padding: 20px; box-shadow: 5px 0 20px rgba(0, 240, 255, 0.15); z-index: 10; }
-        #history-sidebar h2 { color: var(--accent-cyan); margin-bottom: 15px; text-transform: uppercase; text-align: center; }
-        #history-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .log-entry { background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; font-size: 0.95rem; animation: slideInLeft 0.3s ease-out forwards; border-left: 4px solid var(--accent-cyan); word-wrap: break-word; }
-        .log-error { border-left-color: #ff0000; color: #ff6666; font-weight: bold; }
-        .log-success { border-left-color: var(--accent-green); color: var(--accent-green); }
-        #main-content { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 40px; }
-        .screen { display: none; flex-direction: column; align-items: center; background: var(--bg-panel); padding: 60px; border-radius: 20px; box-shadow: 0 10px 50px rgba(0,0,0,0.8); text-align: center; max-width: 800px; width: 100%; animation: fadeIn 0.4s ease; }
-        .screen.active { display: flex; }
-        h1 { font-size: 4rem; margin-bottom: 20px; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 4px; }
-        h2 { font-size: 2.5rem; margin-bottom: 20px; } h3 { font-size: 2rem; margin-bottom: 20px; color: var(--accent-yellow); }
-        p { margin-bottom: 30px; font-size: 1.2rem; color: var(--text-muted); line-height: 1.6; }
-        .input-group { width: 100%; margin-bottom: 20px; text-align: left; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; }
-        input, select { width: 100%; padding: 20px; background: rgba(0,0,0,0.4); border: 2px solid #333; color: white; font-size: 1.5rem; border-radius: 12px; text-align: center; outline: none; transition: 0.3s; }
-        input:focus, select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
-        .btn-row { display: flex; gap: 20px; width: 100%; margin-top: 20px; }
-        button { flex: 1; padding: 20px; font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: white; background: linear-gradient(45deg, #0044cc, var(--accent-cyan)); border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; }
-        button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4); }
-        button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; box-shadow: none; }
-        .btn-alt { background: linear-gradient(45deg, #cc00ff, var(--accent-pink)); } .btn-danger { background: linear-gradient(45deg, #ff0000, #cc0000); }
-        #big-feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); font-size: 7rem; font-weight: 900; text-transform: uppercase; text-align: center; pointer-events: none; opacity: 0; z-index: 100; text-shadow: 0 0 30px rgba(0,0,0,1); width: 100%; }
-        .animate-big-fade { animation: bigFadeOut 2.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
-        #lobby-players { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; }
-        .player-badge { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); padding: 10px 20px; border-radius: 30px; font-size: 1.2rem; }
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes bigFadeOut { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
-        #warning-banner { background: #ff0055; color: white; padding: 10px; text-align: center; font-weight: bold; position: absolute; top: 0; width: 100%; z-index: 1000; display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Multiplayer Number Hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+<style>
+  :root {
+    --bg: #050810;
+    --bg2: #090d1a;
+    --panel: #0d1325;
+    --border: #1a2540;
+    --accent: #00f5ff;
+    --accent2: #ff2d78;
+    --accent3: #7c3aed;
+    --gold: #ffd700;
+    --green: #00ff88;
+    --text: #e2e8f0;
+    --muted: #4a5568;
+    --font-head: 'Orbitron', monospace;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-body: 'Rajdhani', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    animation: gridPulse 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+    top: -200px; right: -200px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    animation: orb 12s ease-in-out infinite alternate;
+  }
+
+  @keyframes gridPulse {
+    0%,100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  @keyframes orb {
+    from { transform: translate(0,0) scale(1); }
+    to { transform: translate(-80px, 80px) scale(1.2); }
+  }
+
+  /* Layout */
+  .wrapper {
+    position: relative; z-index: 1;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .sidebar-title {
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-title::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .log-entry {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 6px 8px;
+    border-left: 2px solid var(--border);
+    line-height: 1.5;
+    transition: all 0.3s;
+  }
+
+  .log-entry.info { color: var(--accent); border-color: var(--accent); }
+  .log-entry.success { color: var(--green); border-color: var(--green); }
+  .log-entry.danger { color: var(--accent2); border-color: var(--accent2); }
+  .log-entry.warn { color: var(--gold); border-color: var(--gold); }
+
+  .log-scroll {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: calc(100vh - 80px);
+  }
+
+  /* Main */
+  main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+  }
+
+  /* Big Feedback */
+  #big-feedback {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-head);
+    font-size: clamp(3rem, 10vw, 7rem);
+    font-weight: 900;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    text-shadow: 0 0 40px currentColor;
+    letter-spacing: 4px;
+  }
+
+  #big-feedback.pop {
+    animation: bigPop 1.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  @keyframes bigPop {
+    0% { opacity:0; transform: translate(-50%,-50%) scale(0.5); }
+    15% { opacity:1; transform: translate(-50%,-50%) scale(1.15); }
+    30% { transform: translate(-50%,-50%) scale(0.95); }
+    45% { transform: translate(-50%,-50%) scale(1.05); }
+    60% { opacity:1; transform: translate(-50%,-50%) scale(1); }
+    100% { opacity:0; transform: translate(-50%,-55%); }
+  }
+
+  /* Screens */
+  .screen { display: none; width: 100%; max-width: 520px; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn {
+    from { opacity:0; transform: translateY(16px); }
+    to { opacity:1; transform: translateY(0); }
+  }
+
+  /* Card */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--accent3), transparent);
+  }
+
+  /* Title */
+  .game-title {
+    font-family: var(--font-head);
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, var(--accent), var(--accent3), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+  }
+
+  .game-sub {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 4px;
+    margin-bottom: 36px;
+    text-transform: uppercase;
+  }
+
+  /* Inputs */
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field input, .field select {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .field input:focus, .field select:focus {
+    border-color: var(--accent);
+    background: rgba(0,245,255,0.05);
+    box-shadow: 0 0 0 3px rgba(0,245,255,0.1), inset 0 0 20px rgba(0,245,255,0.03);
+  }
+
+  .field select option { background: var(--panel); }
+
+  /* Code input */
+  #join-code {
+    font-size: 1.8rem;
+    text-align: center;
+    letter-spacing: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  button {
+    flex: 1;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.1);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  button:hover::after { opacity: 1; }
+  button:active { transform: scale(0.97); }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+  button:disabled:hover::after { opacity: 0; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent3), #5b21b6);
+    color: white;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+  }
+
+  .btn-cyan {
+    background: linear-gradient(135deg, #0891b2, var(--accent));
+    color: var(--bg);
+    box-shadow: 0 4px 20px rgba(0,245,255,0.3);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover { border-color: var(--muted); color: var(--text); }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #9f1239, var(--accent2));
+    color: white;
+  }
+
+  .btn-full {
+    width: 100%;
+    display: block;
+  }
+
+  /* Room Code Display */
+  .room-code-display {
+    text-align: center;
+    padding: 24px;
+    background: rgba(0,245,255,0.04);
+    border: 1px solid rgba(0,245,255,0.2);
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+
+  .room-code-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .room-code-value {
+    font-family: var(--font-head);
+    font-size: 2.8rem;
+    font-weight: 900;
+    letter-spacing: 16px;
+    color: var(--accent);
+    text-shadow: 0 0 30px rgba(0,245,255,0.5);
+  }
+
+  /* Players list */
+  .players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    margin: 20px 0;
+  }
+
+  .player-chip {
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text);
+    position: relative;
+  }
+
+  .player-chip.host::after {
+    content: 'HOST';
+    position: absolute;
+    top: -8px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    background: var(--gold);
+    color: var(--bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .player-chip.active-turn {
+    border-color: var(--green);
+    background: rgba(0,255,136,0.1);
+    box-shadow: 0 0 12px rgba(0,255,136,0.2);
+  }
+
+  /* Status text */
+  .status-big {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 16px;
+    letter-spacing: 2px;
+  }
+
+  /* Range hint */
+  .range-hint {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .hint-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  .hint-high { background: rgba(255,45,120,0.15); border: 1px solid rgba(255,45,120,0.4); color: var(--accent2); }
+  .hint-low { background: rgba(0,245,255,0.1); border: 1px solid rgba(0,245,255,0.3); color: var(--accent); }
+  .hint-warm { background: rgba(255,215,0,0.1); border: 1px solid rgba(255,215,0,0.3); color: var(--gold); }
+
+  /* Guess input */
+  .guess-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .guess-row input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    outline: none;
+    text-align: center;
+    letter-spacing: 4px;
+    transition: all 0.2s;
+  }
+
+  .guess-row input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,245,255,0.1);
+  }
+
+  /* Waiting pulse */
+  .waiting-pulse {
+    text-align: center;
+    padding: 30px;
+  }
+
+  .pulse-ring {
+    width: 60px; height: 60px;
+    border: 2px solid var(--accent3);
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    position: relative;
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+
+  .pulse-ring::before, .pulse-ring::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border: 1px solid var(--accent3);
+    border-radius: 50%;
+    opacity: 0;
+    animation: ripple 2s ease-in-out infinite;
+  }
+
+  .pulse-ring::after { animation-delay: 0.6s; }
+
+  @keyframes pulse-ring {
+    0%,100% { transform: scale(1); border-color: var(--accent3); }
+    50% { transform: scale(1.05); border-color: var(--accent); }
+  }
+
+  @keyframes ripple {
+    0% { opacity: 0.6; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.8); }
+  }
+
+  /* Score / attempt counter */
+  .attempts-bar {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin: 12px 0;
+  }
+
+  .attempt-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+
+  .attempt-dot.used { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* Menu hero art */
+  .hero-rings {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid;
+    animation: spin linear infinite;
+  }
+
+  .ring:nth-child(1) { width:80px; height:80px; border-color: rgba(0,245,255,0.4); animation-duration: 8s; }
+  .ring:nth-child(2) { width:110px; height:110px; border-color: rgba(124,58,237,0.3); animation-duration: 12s; animation-direction: reverse; }
+  .ring:nth-child(3) { width:140px; height:140px; border-color: rgba(255,45,120,0.2); animation-duration: 18s; }
+
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+  .hero-number {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: 0 0 20px var(--accent);
+    z-index: 1;
+    animation: numberFlicker 3s ease-in-out infinite;
+  }
+
+  @keyframes numberFlicker {
+    0%,90%,100% { opacity:1; }
+    92%,98% { opacity:0.3; }
+  }
+
+  /* Win screen */
+  .confetti-text {
+    font-family: var(--font-head);
+    font-size: 3rem;
+    font-weight: 900;
+    text-align: center;
+    background: linear-gradient(135deg, var(--gold), var(--accent2), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 2s linear infinite;
+    background-size: 200% 200%;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  .section-title {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  p.info-text {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    .wrapper { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    main { padding: 20px; }
+  }
+</style>
 </head>
 <body>
 
-    <div id="warning-banner">⚠️ WARNING: You opened this as a local file (file://). Multiplayer will be blocked by your browser! Run it on a web server or VS Code Live Server.</div>
+<div id="big-feedback"></div>
 
-    <aside id="history-sidebar">
-        <h2>Network Log</h2>
-        <div id="history-log">
-            <div class="log-entry" style="color: var(--text-muted)">Awaiting instructions...</div>
+<div class="wrapper">
+  <aside class="sidebar">
+    <div class="sidebar-title">Network Log</div>
+    <div class="log-scroll" id="history-log">
+      <div class="log-entry">Awaiting connection...</div>
+    </div>
+  </aside>
+
+  <main>
+
+    <!-- MENU -->
+    <div id="screen-menu" class="screen active">
+      <div class="card">
+        <div class="hero-rings">
+          <div class="ring"></div>
+          <div class="ring"></div>
+          <div class="ring"></div>
+          <div class="hero-number" id="menu-number">42</div>
         </div>
-    </aside>
+        <div class="game-title">NEXUS</div>
+        <div class="game-sub">Multiplayer Number Hunt</div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="showScreen('host')">⚡ Create Room</button>
+          <button class="btn-cyan" onclick="showScreen('join')">🔗 Join Room</button>
+        </div>
+        <div class="divider"></div>
+        <p class="info-text">Guess the secret number. Every wrong guess narrows the range. First to find it wins!</p>
+      </div>
+    </div>
 
-    <main id="main-content">
-        <div id="big-feedback"></div>
+    <!-- HOST -->
+    <div id="screen-host" class="screen">
+      <div class="card">
+        <div class="game-title" style="font-size:1.8rem; margin-bottom:4px;">Create Room</div>
+        <div class="game-sub">Host Settings</div>
+        <div class="field">
+          <label>Your Callsign</label>
+          <input type="text" id="host-name" placeholder="Enter your alias" maxlength="16">
+        </div>
+        <div class="field">
+          <label>Game Mode</label>
+          <select id="host-mode">
+            <option value="2">2-Player Duel</option>
+            <option value="multi">Multiplayer (3-6)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Number Range</label>
+          <select id="host-range">
+            <option value="100">1 – 100 (Easy)</option>
+            <option value="500">1 – 500 (Medium)</option>
+            <option value="1000">1 – 1000 (Hard)</option>
+          </select>
+        </div>
+        <div class="btn-row">
+          <button class="btn-ghost" onclick="showScreen('menu')">← Back</button>
+          <button class="btn-primary" onclick="createRoom()">Generate Room →</button>
+        </div>
+      </div>
+    </div>
 
-        <div id="screen-menu" class="screen active">
-            <h1>Number Nexus</h1>
-            <p>Online Multiplayer Survival</p>
-            <div class="btn-row">
-                <button onclick="showScreen('host')">Create Room</button>
-                <button class="btn-alt" onclick="showScreen('join')">Join Room</button>
-            </div>
+    <!-- JOIN -->
+    <div id="screen-join" class="screen">
+      <div class="card">
+        <div class="game-title" style="font-size:1.8rem; margin-bottom:4px;">Join Room</div>
+        <div class="game-sub">Enter Invite Code</div>
+        <div class="field">
+          <label>Room Code</label>
+          <input type="text" id="join-code" placeholder="ABCD" maxlength="4" oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <div class="field">
+          <label>Your Callsign</label>
+          <input type="text" id="join-name" placeholder="Enter your alias" maxlength="16">
+        </div>
+        <div class="btn-row">
+          <button class="btn-ghost" onclick="showScreen('menu')">← Back</button>
+          <button class="btn-cyan" onclick="joinRoom()">Connect →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOBBY -->
+    <div id="screen-lobby" class="screen">
+      <div class="card">
+        <div class="room-code-display">
+          <div class="room-code-label">Room Code — Share with friends</div>
+          <div class="room-code-value" id="display-room-code">----</div>
+        </div>
+        <div class="section-title">Players Connected</div>
+        <div class="players-grid" id="lobby-players"></div>
+        <div class="divider"></div>
+        <button id="btn-start-game" class="btn-primary btn-full" disabled onclick="hostStartGame()">Waiting for players...</button>
+        <p id="lobby-status" class="info-text" style="margin-top:12px; font-size:0.8rem;"></p>
+      </div>
+    </div>
+
+    <!-- GAME -->
+    <div id="screen-game" class="screen">
+      <div class="card">
+        <div class="section-title">Round Status</div>
+        <div class="status-big" id="turn-status">...</div>
+
+        <div class="attempts-bar" id="attempts-bar"></div>
+
+        <div class="range-hint" id="range-hints"></div>
+
+        <div id="active-play-area" style="display:none;">
+          <p class="info-text" style="margin-bottom:12px;">Pick a number between <strong id="range-text" style="color:var(--accent)">1 – 100</strong></p>
+          <div class="guess-row">
+            <input type="number" id="guess-input" placeholder="???" min="1" onkeydown="if(event.key==='Enter') sendGuess()">
+            <button class="btn-primary" onclick="sendGuess()" style="flex:0; padding:14px 24px; font-size:1rem;">GO</button>
+          </div>
         </div>
 
-        <div id="screen-host" class="screen">
-            <h2>Host Settings</h2>
-            <div class="input-group">
-                <label>Your Name</label>
-                <input type="text" id="host-name" placeholder="Enter your alias">
-            </div>
-            <div class="input-group">
-                <label>Game Mode</label>
-                <select id="host-mode">
-                    <option value="2">2-Player Showdown</option>
-                    <option value="multi">Multiplayer Chaos</option>
-                </select>
-            </div>
-            <div class="btn-row">
-                <button class="btn-danger" onclick="showScreen('menu')">Back</button>
-                <button onclick="createRoom()">Generate Room</button>
-            </div>
+        <div id="waiting-area" style="display:none;">
+          <div class="waiting-pulse">
+            <div class="pulse-ring"></div>
+            <p style="font-family:var(--font-mono); color:var(--muted); font-size:0.85rem; letter-spacing:2px;">AWAITING GUESS...</p>
+          </div>
         </div>
 
-        <div id="screen-join" class="screen">
-            <h2>Join a Room</h2>
-            <div class="input-group">
-                <label>Room Code</label>
-                <input type="text" id="join-code" placeholder="e.g. ABCD" maxlength="4" style="text-transform: uppercase;">
-            </div>
-            <div class="input-group">
-                <label>Your Name</label>
-                <input type="text" id="join-name" placeholder="Enter your alias">
-            </div>
-            <div class="btn-row">
-                <button class="btn-danger" onclick="showScreen('menu')">Back</button>
-                <button onclick="joinRoom()">Connect</button>
-            </div>
-        </div>
+        <div class="players-grid" id="game-players" style="margin-top:16px;"></div>
+      </div>
+    </div>
 
-        <div id="screen-lobby" class="screen">
-            <h2>Room Code: <span id="display-room-code" style="color: var(--accent-pink); letter-spacing: 5px;">----</span></h2>
-            <p id="lobby-mode-text"></p>
-            <div id="lobby-players"></div>
-            <button id="btn-start-game" disabled onclick="hostStartGame()">Waiting for players...</button>
-        </div>
+    <!-- WIN -->
+    <div id="screen-win" class="screen">
+      <div class="card">
+        <div style="font-size:3rem; text-align:center; margin-bottom:8px;">🏆</div>
+        <div class="confetti-text" id="win-title">WINNER!</div>
+        <div class="section-title" style="text-align:center; margin-top:12px;" id="win-name">---</div>
+        <div class="divider"></div>
+        <p class="info-text" id="win-detail" style="margin-bottom:20px;"></p>
+        <button class="btn-primary btn-full" onclick="resetGame()">Play Again</button>
+      </div>
+    </div>
 
-        <div id="screen-game" class="screen">
-            <h3 id="turn-status">Game Started!</h3>
-            
-            <div id="active-play-area" style="display: none; width: 100%;">
-                <p>Guess a number (1 - 100).</p>
-                <input type="number" id="guess-input" placeholder="Make your guess...">
-                <button onclick="sendGuess()">Submit Guess</button>
-            </div>
+  </main>
+</div>
 
-            <div id="waiting-area" style="display: none; width: 100%;">
-                <p style="font-size: 1.5rem; color: var(--accent-cyan);">Waiting for the active player to guess...</p>
-            </div>
-        </div>
-    </main>
+<script>
+// ================================================================
+// STATE
+// ================================================================
+let localPlayer = { id: genId(), name: '', isHost: false };
+let gameState = {
+  roomId: null,
+  mode: '2',
+  range: 100,
+  players: [],
+  activeTurnId: null,
+  status: 'lobby',
+  secretNumber: null,
+  low: 1,
+  high: 100,
+  attempts: 0,
+  maxAttempts: 10,
+  guessHistory: []
+};
 
-    <script>
-        // Check for file protocol warning
-        if (window.location.protocol === 'file:') {
-            document.getElementById('warning-banner').style.display = 'block';
+let peer = null;
+let connections = [];
+let hostConnection = null;
+
+// ================================================================
+// UTILS
+// ================================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function genId() { return Math.random().toString(36).substr(2, 9); }
+
+function genRoomCode() {
+  return Array.from({length:4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*23)]).join('');
+}
+
+function log(msg, type='') {
+  const d = document.createElement('div');
+  d.className = 'log-entry ' + type;
+  d.innerHTML = msg;
+  const log = document.getElementById('history-log');
+  log.prepend(d);
+  if (log.children.length > 50) log.lastChild.remove();
+}
+
+function bigFeedback(text, color) {
+  const el = document.getElementById('big-feedback');
+  el.textContent = text;
+  el.style.color = color;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+// Animate menu number
+(function() {
+  const el = document.getElementById('menu-number');
+  setInterval(() => {
+    el.textContent = Math.floor(Math.random() * 100) + 1;
+  }, 1200);
+})();
+
+// ================================================================
+// HOST LOGIC
+// ================================================================
+function createRoom() {
+  const name = document.getElementById('host-name').value.trim() || 'Host';
+  localPlayer.name = name;
+  localPlayer.isHost = true;
+  gameState.mode = document.getElementById('host-mode').value;
+  gameState.range = parseInt(document.getElementById('host-range').value);
+  gameState.high = gameState.range;
+  gameState.roomId = genRoomCode();
+  gameState.players = [{ id: localPlayer.id, name, isHost: true }];
+
+  log('Connecting to broker...', 'info');
+
+  peer = new Peer('nexus-' + gameState.roomId, {
+    config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] }
+  });
+
+  peer.on('open', () => {
+    log(`Room <strong>${gameState.roomId}</strong> created!`, 'success');
+    updateLobbyUI();
+    showScreen('lobby');
+  });
+
+  peer.on('error', e => log('Peer error: ' + e.type, 'danger'));
+
+  peer.on('connection', conn => {
+    connections.push(conn);
+    conn.on('data', data => handleHostReceive(conn, data));
+    conn.on('close', () => {
+      connections = connections.filter(c => c !== conn);
+      // Remove player
+      if (conn._guestId) {
+        gameState.players = gameState.players.filter(p => p.id !== conn._guestId);
+        broadcastState();
+      }
+    });
+  });
+}
+
+function handleHostReceive(conn, data) {
+  if (data.type === 'JOIN') {
+    conn._guestId = data.id;
+    gameState.players.push({ id: data.id, name: data.name, isHost: false });
+    log(`<strong>${data.name}</strong> joined!`, 'success');
+    broadcastState();
+  }
+  if (data.type === 'GUESS') {
+    handleGuess(data.playerId, data.value);
+  }
+}
+
+function broadcastState() {
+  if (!localPlayer.isHost) return;
+  updateLobbyUI();
+  updateGameUI();
+  const msg = { type: 'STATE_UPDATE', state: gameState };
+  connections.forEach(c => { try { c.send(msg); } catch(e){} });
+}
+
+function broadcastFeedback(text, color, logMsg) {
+  connections.forEach(c => { try { c.send({ type: 'FEEDBACK', text, color, logMsg }); } catch(e){} });
+}
+
+// ================================================================
+// GUEST LOGIC
+// ================================================================
+function joinRoom() {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  const name = document.getElementById('join-name').value.trim() || 'Guest';
+  if (!code || code.length !== 4) { alert('Enter a 4-letter room code.'); return; }
+
+  localPlayer.name = name;
+  localPlayer.isHost = false;
+
+  log('Searching for room ' + code + '...', 'info');
+  peer = new Peer();
+
+  peer.on('open', () => {
+    hostConnection = peer.connect('nexus-' + code);
+
+    hostConnection.on('open', () => {
+      log('Connected to host!', 'success');
+      hostConnection.send({ type: 'JOIN', id: localPlayer.id, name });
+      showScreen('lobby');
+    });
+
+    hostConnection.on('data', data => {
+      if (data.type === 'STATE_UPDATE') {
+        gameState = data.state;
+        if (gameState.status === 'playing') {
+          if (!document.getElementById('screen-game').classList.contains('active')) showScreen('game');
         }
-
-        // --- Game & Network State ---
-        let localPlayer = { id: generateId(), name: '', isHost: false };
-        let gameState = { roomId: null, mode: '2', players: [], activeTurnId: null, status: 'lobby' };
-        
-        let peer = null;
-        let connections = []; // Host uses this
-        let hostConnection = null; // Guests use this
-
-        // WebRTC Config
-        const peerOptions = {
-            debug: 2,
-            config: {
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' } // Backup server added
-                ]
-            }
-        };
-
-        // --- Utils ---
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(`screen-${screenId}`).classList.add('active');
+        if (gameState.status === 'won') {
+          showWinScreen(data.state);
         }
-        function generateId() { return Math.random().toString(36).substr(2, 9); }
-        function generateRoomCode() {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-            let result = '';
-            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            return result;
-        }
-        function logEvent(msg, type = 'normal') {
-            const div = document.createElement('div');
-            div.className = `log-entry ${type}`;
-            div.innerHTML = msg;
-            document.getElementById('history-log').prepend(div);
-            console.log(`[NETWORK LOG]: ${msg}`);
-        }
-        function triggerBigFade(text, color) {
-            const bf = document.getElementById('big-feedback');
-            bf.innerText = text; bf.style.color = color;
-            bf.classList.remove('animate-big-fade'); void bf.offsetWidth; bf.classList.add('animate-big-fade');
-        }
+        updateLobbyUI();
+        updateGameUI();
+      }
+      if (data.type === 'FEEDBACK') {
+        bigFeedback(data.text, data.color);
+        log(data.logMsg);
+      }
+    });
 
-        function destroyPeer() {
-            if (peer) { peer.destroy(); peer = null; connections = []; hostConnection = null; }
-            gameState.players = [];
-        }
+    hostConnection.on('error', () => log('Connection failed', 'danger'));
+    hostConnection.on('close', () => log('Disconnected from host', 'danger'));
+  });
 
-        // ==========================================
-        // HOST LOGIC (Acts as Server)
-        // ==========================================
-        function createRoom() {
-            destroyPeer();
-            localPlayer.name = document.getElementById('host-name').value || 'Host';
-            localPlayer.isHost = true;
-            gameState.mode = document.getElementById('host-mode').value;
-            gameState.roomId = generateRoomCode();
-            
-            gameState.players.push({ id: localPlayer.id, name: localPlayer.name });
+  peer.on('error', e => {
+    log('Error: ' + e.type, 'danger');
+    if (e.type === 'peer-unavailable') alert('Room not found! Check the code.');
+  });
+}
 
-            logEvent("Attempting to create room server...");
-            
-            peer = new Peer('nexus-' + gameState.roomId, peerOptions);
+// ================================================================
+// GAME FLOW
+// ================================================================
+function hostStartGame() {
+  if (!localPlayer.isHost) return;
+  gameState.status = 'playing';
+  gameState.secretNumber = Math.floor(Math.random() * gameState.range) + 1;
+  gameState.activeTurnId = gameState.players[0].id;
+  gameState.low = 1;
+  gameState.high = gameState.range;
+  gameState.attempts = 0;
+  gameState.guessHistory = [];
+  log(`Secret number set (${gameState.secretNumber}). Game started!`, 'info');
+  broadcastState();
+  showScreen('game');
+  updateGameUI();
+}
 
-            peer.on('open', (id) => {
-                logEvent(`Server established! Room Code: ${gameState.roomId}`, 'log-success');
-                updateLobbyUI();
-                showScreen('lobby');
-            });
+function updateLobbyUI() {
+  document.getElementById('display-room-code').textContent = gameState.roomId || '----';
+  const container = document.getElementById('lobby-players');
+  container.innerHTML = '';
+  gameState.players.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'player-chip' + (p.isHost ? ' host' : '');
+    d.textContent = p.name;
+    container.appendChild(d);
+  });
 
-            peer.on('connection', (conn) => {
-                logEvent(`Incoming connection request from peer...`);
-                
-                conn.on('open', () => {
-                    logEvent(`Peer channel fully opened!`);
-                    connections.push(conn);
-                });
-                
-                conn.on('data', (data) => {
-                    logEvent(`Received data: ${data.type}`);
-                    if (data.type === 'JOIN') {
-                        if (!gameState.players.find(p => p.id === data.id)) {
-                            gameState.players.push({ id: data.id, name: data.name });
-                            logEvent(`${data.name} officially joined!`, 'log-success');
-                        }
-                        broadcastState(); 
-                    }
-                    if (data.type === 'GUESS') {
-                        handleGuessData(data.playerId, data.value);
-                    }
-                });
+  if (localPlayer.isHost) {
+    const req = gameState.mode === '2' ? 2 : 3;
+    const btn = document.getElementById('btn-start-game');
+    const status = document.getElementById('lobby-status');
+    if (gameState.players.length >= req) {
+      btn.disabled = false;
+      btn.textContent = '▶ Start Game';
+      status.textContent = '';
+    } else {
+      btn.disabled = true;
+      btn.textContent = 'Waiting for players...';
+      status.textContent = `Need ${req - gameState.players.length} more player(s) to start`;
+    }
+  } else {
+    document.getElementById('btn-start-game').disabled = true;
+    document.getElementById('btn-start-game').textContent = 'Host will start the game...';
+    document.getElementById('lobby-status').textContent = '';
+  }
+}
 
-                conn.on('close', () => {
-                    logEvent("A player disconnected.", "log-error");
-                    connections = connections.filter(c => c !== conn);
-                });
-            });
+function updateGameUI() {
+  if (gameState.status !== 'playing') return;
 
-            peer.on('error', (err) => {
-                logEvent(`PeerJS Error: ${err.message}`, 'log-error');
-            });
-        }
+  const isMyTurn = gameState.activeTurnId === localPlayer.id;
+  const active = gameState.players.find(p => p.id === gameState.activeTurnId);
 
-        function broadcastState() {
-            if (!localPlayer.isHost) return;
-            updateLobbyUI();
-            logEvent("Broadcasting game state to clients...");
-            connections.forEach(conn => conn.send({ type: 'STATE_UPDATE', state: gameState }));
-        }
+  document.getElementById('turn-status').textContent = isMyTurn
+    ? 'YOUR TURN — GUESS NOW!'
+    : `${active ? active.name : '?'}'s Turn`;
+  document.getElementById('turn-status').style.color = isMyTurn ? 'var(--green)' : 'var(--muted)';
 
-        // ==========================================
-        // GUEST LOGIC (Connects to Host)
-        // ==========================================
-        function joinRoom() {
-            destroyPeer();
-            localPlayer.name = document.getElementById('join-name').value || 'Guest';
-            localPlayer.isHost = false;
-            let code = document.getElementById('join-code').value.toUpperCase();
-            
-            logEvent(`Connecting to PeerJS Broker...`);
-            
-            peer = new Peer(peerOptions);
+  document.getElementById('active-play-area').style.display = isMyTurn ? 'block' : 'none';
+  document.getElementById('waiting-area').style.display = isMyTurn ? 'none' : 'block';
 
-            peer.on('open', (myId) => {
-                logEvent(`Broker connected. My ID is ${myId}. Finding Host ${code}...`);
-                
-                hostConnection = peer.connect('nexus-' + code, { reliable: true });
+  // Range text
+  document.getElementById('range-text').textContent = `${gameState.low} – ${gameState.high}`;
 
-                hostConnection.on('open', () => {
-                    logEvent("Successfully connected to Host! Sending JOIN request...", 'log-success');
-                    hostConnection.send({ type: 'JOIN', id: localPlayer.id, name: localPlayer.name });
-                    showScreen('lobby');
-                });
+  // Attempt dots
+  const bar = document.getElementById('attempts-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < gameState.maxAttempts; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'attempt-dot' + (i < gameState.attempts ? ' used' : '');
+    bar.appendChild(dot);
+  }
 
-                hostConnection.on('data', (data) => {
-                    if (data.type === 'STATE_UPDATE') {
-                        gameState = data.state;
-                        updateLobbyUI();
-                        if (gameState.status === 'playing' && document.getElementById('screen-lobby').classList.contains('active')) {
-                            logEvent("Host started the game!", "log-success");
-                            showScreen('game');
-                        }
-                        updateGameUI();
-                    }
-                    if (data.type === 'FEEDBACK') {
-                        triggerBigFade(data.text, data.color);
-                        logEvent(data.logMsg);
-                    }
-                });
+  // Hints
+  const hints = document.getElementById('range-hints');
+  hints.innerHTML = '';
+  gameState.guessHistory.slice(-3).forEach(h => {
+    const tag = document.createElement('div');
+    tag.className = 'hint-tag ' + (h.dir === 'HIGH' ? 'hint-high' : h.dir === 'LOW' ? 'hint-low' : 'hint-warm');
+    tag.textContent = `${h.player}: ${h.val} → ${h.dir}`;
+    hints.appendChild(tag);
+  });
 
-                hostConnection.on('close', () => {
-                    logEvent("Connection to host lost.", "log-error");
-                    alert("Host disconnected.");
-                    showScreen('menu');
-                });
-            });
+  // Player chips
+  const gp = document.getElementById('game-players');
+  gp.innerHTML = '';
+  gameState.players.forEach(p => {
+    const d = document.createElement('div');
+    d.className = 'player-chip' + (p.isHost ? ' host' : '') + (p.id === gameState.activeTurnId ? ' active-turn' : '');
+    d.textContent = p.name;
+    gp.appendChild(d);
+  });
+}
 
-            peer.on('error', (err) => {
-                logEvent(`Error: ${err.type}`, 'log-error');
-                if (err.type === 'peer-unavailable') {
-                    alert(`Room ${code} not found! Check if Host is still in the lobby.`);
-                }
-            });
-        }
+function sendGuess() {
+  const input = document.getElementById('guess-input');
+  const val = parseInt(input.value);
+  if (isNaN(val) || val < 1) return;
+  input.value = '';
 
-        // ==========================================
-        // UI & GAME UPDATES
-        // ==========================================
-        function updateLobbyUI() {
-            document.getElementById('display-room-code').innerText = gameState.roomId || "----";
-            document.getElementById('lobby-mode-text').innerText = gameState.mode === '2' ? "2-Player Mode" : "Multiplayer Mode";
-            
-            const container = document.getElementById('lobby-players');
-            container.innerHTML = '';
-            gameState.players.forEach(p => {
-                container.innerHTML += `<div class="player-badge">${p.name}</div>`;
-            });
+  if (localPlayer.isHost) {
+    handleGuess(localPlayer.id, val);
+  } else {
+    hostConnection.send({ type: 'GUESS', playerId: localPlayer.id, value: val });
+  }
+}
 
-            const btn = document.getElementById('btn-start-game');
-            if (localPlayer.isHost) {
-                const req = gameState.mode === '2' ? 2 : 3;
-                if (gameState.players.length >= req) {
-                    btn.disabled = false;
-                    btn.innerText = "Start Game";
-                } else {
-                    btn.disabled = true;
-                    btn.innerText = "Waiting for players...";
-                }
-            } else {
-                btn.disabled = true;
-                btn.innerText = "Waiting for Host to start...";
-            }
-        }
+function handleGuess(playerId, val) {
+  if (!localPlayer.isHost) return;
+  const secret = gameState.secretNumber;
+  const guesser = gameState.players.find(p => p.id === playerId);
+  if (!guesser) return;
 
-        function hostStartGame() {
-            if (!localPlayer.isHost) return;
-            gameState.status = 'playing';
-            gameState.activeTurnId = gameState.players[0].id; 
-            broadcastState();
-            showScreen('game');
-            updateGameUI();
-        }
+  gameState.attempts++;
 
-        function updateGameUI() {
-            if (gameState.status !== 'playing') return;
-            let isMyTurn = (gameState.activeTurnId === localPlayer.id);
-            let activePlayer = gameState.players.find(p => p.id === gameState.activeTurnId);
+  // Check win
+  if (val === secret) {
+    const logMsg = `🎉 <strong>${guesser.name}</strong> guessed ${val} — CORRECT!`;
+    log(logMsg, 'success');
+    bigFeedback('CORRECT!', 'var(--green)');
+    broadcastFeedback('CORRECT!', 'var(--green)', logMsg);
 
-            document.getElementById('turn-status').innerText = isMyTurn ? "IT IS YOUR TURN!" : `Waiting for ${activePlayer.name}...`;
-            document.getElementById('turn-status').style.color = isMyTurn ? "var(--accent-green)" : "var(--text-muted)";
-            
-            document.getElementById('active-play-area').style.display = isMyTurn ? "block" : "none";
-            document.getElementById('waiting-area').style.display = isMyTurn ? "none" : "block";
-        }
+    gameState.status = 'won';
+    gameState.winner = guesser.name;
+    gameState.winAttempts = gameState.attempts;
+    broadcastState();
+    setTimeout(() => showWinScreen(gameState), 1200);
+    return;
+  }
 
-        function sendGuess() {
-            let guess = parseInt(document.getElementById('guess-input').value);
-            if (isNaN(guess)) return;
+  // Wrong guess
+  let direction, feedText, feedColor, logMsg;
+  if (val < secret) {
+    direction = 'LOW';
+    feedText = 'TOO LOW ↑';
+    feedColor = 'var(--accent)';
+    gameState.low = Math.max(gameState.low, val + 1);
+  } else {
+    direction = 'HIGH';
+    feedText = 'TOO HIGH ↓';
+    feedColor = 'var(--accent2)';
+    gameState.high = Math.min(gameState.high, val - 1);
+  }
 
-            logEvent(`You submitted guess: ${guess}`);
+  gameState.guessHistory.push({ player: guesser.name, val, dir: direction });
+  logMsg = `<strong>${guesser.name}</strong> guessed <strong>${val}</strong> → ${direction}`;
+  log(logMsg, direction === 'LOW' ? 'info' : 'danger');
 
-            if (localPlayer.isHost) {
-                handleGuessData(localPlayer.id, guess);
-            } else {
-                hostConnection.send({ type: 'GUESS', playerId: localPlayer.id, value: guess });
-            }
-            document.getElementById('guess-input').value = '';
-        }
+  bigFeedback(feedText, feedColor);
+  broadcastFeedback(feedText, feedColor, logMsg);
 
-        function handleGuessData(playerId, guessValue) {
-            let guesser = gameState.players.find(p => p.id === playerId);
-            
-            let resultType = Math.random() > 0.5 ? "TOO HIGH!" : "TOO LOW!";
-            let logMsg = `<strong>${guesser.name}</strong> guessed ${guessValue}. Result: ${resultType}`;
-            
-            triggerBigFade(resultType, 'var(--accent-cyan)');
-            logEvent(logMsg);
+  // Check max attempts
+  if (gameState.attempts >= gameState.maxAttempts) {
+    const failMsg = `💀 Out of attempts! The number was <strong>${secret}</strong>`;
+    log(failMsg, 'danger');
+    bigFeedback(gameState.secretNumber.toString(), 'var(--gold)');
+    broadcastFeedback(gameState.secretNumber.toString(), 'var(--gold)', failMsg);
+    gameState.status = 'won';
+    gameState.winner = 'Nobody';
+    gameState.winAttempts = gameState.attempts;
+    broadcastState();
+    setTimeout(() => showWinScreen(gameState), 1600);
+    return;
+  }
 
-            connections.forEach(conn => conn.send({ type: 'FEEDBACK', text: resultType, color: 'var(--accent-cyan)', logMsg: logMsg }));
+  // Next turn
+  const idx = gameState.players.findIndex(p => p.id === gameState.activeTurnId);
+  gameState.activeTurnId = gameState.players[(idx + 1) % gameState.players.length].id;
+  setTimeout(() => broadcastState(), 900);
+  updateGameUI();
+}
 
-            let currentIndex = gameState.players.findIndex(p => p.id === gameState.activeTurnId);
-            let nextIndex = (currentIndex + 1) % gameState.players.length;
-            gameState.activeTurnId = gameState.players[nextIndex].id;
-            
-            setTimeout(() => broadcastState(), 1000);
-            updateGameUI();
-        }
-    </script>
+function showWinScreen(state) {
+  const noWin = state.winner === 'Nobody';
+  document.getElementById('win-title').textContent = noWin ? 'GAME OVER' : 'WINNER!';
+  document.getElementById('win-title').style.background = noWin
+    ? 'linear-gradient(135deg, var(--accent2), #9f1239)'
+    : 'linear-gradient(135deg, var(--gold), var(--accent2), var(--accent))';
+  document.getElementById('win-name').textContent = noWin
+    ? `The number was ${state.secretNumber}`
+    : `🏆 ${state.winner}`;
+  document.getElementById('win-detail').textContent = noWin
+    ? `Nobody found ${state.secretNumber} in ${state.maxAttempts} attempts.`
+    : `Found the number in ${state.winAttempts} attempt(s)!`;
+  showScreen('win');
+}
+
+function resetGame() {
+  // Reset state for a new round
+  gameState.status = 'lobby';
+  gameState.secretNumber = null;
+  gameState.low = 1;
+  gameState.high = gameState.range;
+  gameState.attempts = 0;
+  gameState.guessHistory = [];
+  gameState.activeTurnId = null;
+
+  if (localPlayer.isHost) {
+    broadcastState();
+    showScreen('lobby');
+    updateLobbyUI();
+  } else {
+    showScreen('lobby');
+  }
+}
+</script>
 </body>
 </html>
