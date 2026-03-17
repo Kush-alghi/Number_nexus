@@ -264,6 +264,16 @@
         let connections = []; // Host uses this to talk to guests
         let hostConnection = null; // Guests use this to talk to host
 
+        // FIX 1: Provide STUN servers so devices on different networks can find each other
+        const peerConfig = {
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
+        };
+
         // --- Utils ---
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -299,9 +309,10 @@
             
             gameState.players.push({ id: localPlayer.id, name: localPlayer.name });
 
-            // Initialize PeerJS using the Room Code as the unique ID
             logEvent("Connecting to server broker...");
-            peer = new Peer('nexus-' + gameState.roomId);
+            
+            // FIX 2: Apply the STUN server config
+            peer = new Peer('nexus-' + gameState.roomId, peerConfig);
 
             peer.on('open', (id) => {
                 logEvent(`Room Created. Waiting for connections...`);
@@ -309,21 +320,36 @@
                 showScreen('lobby');
             });
 
-            // When a guest connects to the host
             peer.on('connection', (conn) => {
-                connections.push(conn);
+                // FIX 3: Wait until connection is strictly open before pushing to active connections array
+                conn.on('open', () => {
+                    connections.push(conn);
+                });
                 
-                // Listen for messages from the guest
                 conn.on('data', (data) => {
                     if (data.type === 'JOIN') {
-                        gameState.players.push({ id: data.id, name: data.name });
-                        logEvent(`${data.name} joined the room!`, 'log-point');
-                        broadcastState(); // Tell everyone the new player list
+                        // Prevent duplicate connections if player refreshes
+                        if (!gameState.players.find(p => p.id === data.id)) {
+                            gameState.players.push({ id: data.id, name: data.name });
+                            logEvent(`${data.name} joined the room!`, 'log-point');
+                        }
+                        broadcastState(); 
                     }
                     if (data.type === 'GUESS') {
                         handleGuessData(data.playerId, data.value);
                     }
                 });
+                
+                conn.on('close', () => {
+                    logEvent(`A player disconnected.`, 'log-elimination');
+                    connections = connections.filter(c => c !== conn);
+                });
+            });
+
+            // FIX 4: Error handling so you know if network failed
+            peer.on('error', (err) => {
+                logEvent(`Error: ${err.type}`, 'log-elimination');
+                console.error(err);
             });
         }
 
@@ -342,11 +368,13 @@
             let code = document.getElementById('join-code').value.toUpperCase();
             
             logEvent("Finding room...");
-            peer = new Peer(); // Guest gets a random ID
+            
+            // Apply STUN server config for guest too
+            peer = new Peer(peerConfig); 
 
             peer.on('open', () => {
-                // Connect to the Host's Room Code ID
-                hostConnection = peer.connect('nexus-' + code);
+                // Set reliable: true to prevent WebRTC message dropping
+                hostConnection = peer.connect('nexus-' + code, { reliable: true });
 
                 hostConnection.on('open', () => {
                     logEvent("Connected to Host!");
@@ -354,7 +382,6 @@
                     showScreen('lobby');
                 });
 
-                // Listen for updates from Host
                 hostConnection.on('data', (data) => {
                     if (data.type === 'STATE_UPDATE') {
                         gameState = data.state;
@@ -369,6 +396,14 @@
                         logEvent(data.logMsg);
                     }
                 });
+            });
+
+            // Handle errors (e.g., incorrect room code)
+            peer.on('error', (err) => {
+                logEvent(`Connection Failed: ${err.type}`, 'log-elimination');
+                if (err.type === 'peer-unavailable') {
+                    alert("Room not found! Ensure the host is active and code is correct.");
+                }
             });
         }
 
@@ -385,20 +420,23 @@
                 container.innerHTML += `<div class="player-badge">${p.name}</div>`;
             });
 
+            const btn = document.getElementById('btn-start-game');
             if (localPlayer.isHost) {
-                const btn = document.getElementById('btn-start-game');
                 const req = gameState.mode === '2' ? 2 : 3;
                 if (gameState.players.length >= req) {
                     btn.disabled = false;
                     btn.innerText = "Start Game";
                 }
+            } else {
+                btn.disabled = true;
+                btn.innerText = "Waiting for Host to start...";
             }
         }
 
         function hostStartGame() {
             if (!localPlayer.isHost) return;
             gameState.status = 'playing';
-            gameState.activeTurnId = gameState.players[0].id; // Host starts
+            gameState.activeTurnId = gameState.players[0].id; 
             broadcastState();
             showScreen('game');
             updateGameUI();
@@ -428,22 +466,17 @@
             document.getElementById('guess-input').value = '';
         }
 
-        // Host calculates the game logic and sends feedback
         function handleGuessData(playerId, guessValue) {
             let guesser = gameState.players.find(p => p.id === playerId);
             
-            // Randomize a High/Low response for testing gameplay loop
             let resultType = Math.random() > 0.5 ? "TOO HIGH!" : "TOO LOW!";
             let logMsg = `<strong>${guesser.name}</strong> guessed ${guessValue}. Result: ${resultType}`;
             
-            // Show to Host
             triggerBigFade(resultType, 'var(--accent-cyan)');
             logEvent(logMsg);
 
-            // Broadcast to Guests
             connections.forEach(conn => conn.send({ type: 'FEEDBACK', text: resultType, color: 'var(--accent-cyan)', logMsg: logMsg }));
 
-            // Cycle turn
             let currentIndex = gameState.players.findIndex(p => p.id === gameState.activeTurnId);
             let nextIndex = (currentIndex + 1) % gameState.players.length;
             gameState.activeTurnId = gameState.players[nextIndex].id;
