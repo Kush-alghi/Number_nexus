@@ -6,182 +6,53 @@
     <title>Number Nexus - Online P2P</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
+        /* [CSS IS EXACTLY THE SAME AS BEFORE] */
         :root {
-            --bg-dark: #0a0a0f;
-            --bg-panel: #161622;
-            --accent-cyan: #00f0ff;
-            --accent-pink: #ff0055;
-            --accent-green: #00ff66;
-            --accent-yellow: #ffd700;
-            --text-main: #ffffff;
-            --text-muted: #888899;
-            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --bg-dark: #0a0a0f; --bg-panel: #161622; --accent-cyan: #00f0ff; 
+            --accent-pink: #ff0055; --accent-green: #00ff66; --accent-yellow: #ffd700;
+            --text-main: #ffffff; --text-muted: #888899; --font-main: 'Segoe UI', sans-serif;
         }
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--font-main);
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-
-        #history-sidebar {
-            width: 350px;
-            background-color: var(--bg-panel);
-            border-right: 2px solid var(--accent-cyan);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            box-shadow: 5px 0 20px rgba(0, 240, 255, 0.15);
-            z-index: 10;
-        }
-
-        #history-sidebar h2 {
-            color: var(--accent-cyan);
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-align: center;
-        }
-
-        #history-log {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .log-entry {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 1rem;
-            animation: slideInLeft 0.3s ease-out forwards;
-            border-left: 4px solid var(--accent-cyan);
-        }
-        .log-elimination { border-left-color: var(--accent-pink); font-weight: bold; }
-        .log-point { border-left-color: var(--accent-green); }
-
-        #main-content {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            background: var(--bg-panel);
-            padding: 60px;
-            border-radius: 20px;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
-            text-align: center;
-            max-width: 800px;
-            width: 100%;
-            animation: fadeIn 0.4s ease;
-        }
-
+        body { font-family: var(--font-main); background-color: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+        #history-sidebar { width: 350px; background-color: var(--bg-panel); border-right: 2px solid var(--accent-cyan); display: flex; flex-direction: column; padding: 20px; box-shadow: 5px 0 20px rgba(0, 240, 255, 0.15); z-index: 10; }
+        #history-sidebar h2 { color: var(--accent-cyan); margin-bottom: 15px; text-transform: uppercase; text-align: center; }
+        #history-log { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .log-entry { background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 8px; font-size: 0.95rem; animation: slideInLeft 0.3s ease-out forwards; border-left: 4px solid var(--accent-cyan); word-wrap: break-word; }
+        .log-error { border-left-color: #ff0000; color: #ff6666; font-weight: bold; }
+        .log-success { border-left-color: var(--accent-green); color: var(--accent-green); }
+        #main-content { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 40px; }
+        .screen { display: none; flex-direction: column; align-items: center; background: var(--bg-panel); padding: 60px; border-radius: 20px; box-shadow: 0 10px 50px rgba(0,0,0,0.8); text-align: center; max-width: 800px; width: 100%; animation: fadeIn 0.4s ease; }
         .screen.active { display: flex; }
-
-        h1 {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-        }
-
-        h2 { font-size: 2.5rem; margin-bottom: 20px; }
-        h3 { font-size: 2rem; margin-bottom: 20px; color: var(--accent-yellow); }
+        h1 { font-size: 4rem; margin-bottom: 20px; background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase; letter-spacing: 4px; }
+        h2 { font-size: 2.5rem; margin-bottom: 20px; } h3 { font-size: 2rem; margin-bottom: 20px; color: var(--accent-yellow); }
         p { margin-bottom: 30px; font-size: 1.2rem; color: var(--text-muted); line-height: 1.6; }
-
         .input-group { width: 100%; margin-bottom: 20px; text-align: left; }
         .input-group label { display: block; margin-bottom: 8px; color: var(--accent-cyan); font-weight: bold; text-transform: uppercase; }
-
-        input, select {
-            width: 100%;
-            padding: 20px;
-            background: rgba(0,0,0,0.4);
-            border: 2px solid #333;
-            color: white;
-            font-size: 1.5rem;
-            border-radius: 12px;
-            text-align: center;
-            outline: none;
-            transition: 0.3s;
-        }
-
+        input, select { width: 100%; padding: 20px; background: rgba(0,0,0,0.4); border: 2px solid #333; color: white; font-size: 1.5rem; border-radius: 12px; text-align: center; outline: none; transition: 0.3s; }
         input:focus, select:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
-
         .btn-row { display: flex; gap: 20px; width: 100%; margin-top: 20px; }
-
-        button {
-            flex: 1;
-            padding: 20px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: white;
-            background: linear-gradient(45deg, #0044cc, var(--accent-cyan));
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
+        button { flex: 1; padding: 20px; font-size: 1.5rem; font-weight: bold; text-transform: uppercase; color: white; background: linear-gradient(45deg, #0044cc, var(--accent-cyan)); border: none; border-radius: 12px; cursor: pointer; transition: 0.2s; }
         button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4); }
         button:disabled { background: #333; color: #777; cursor: not-allowed; transform: none; box-shadow: none; }
-        .btn-alt { background: linear-gradient(45deg, #cc00ff, var(--accent-pink)); }
-        .btn-danger { background: linear-gradient(45deg, #ff0000, #cc0000); }
-
-        #big-feedback {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.5);
-            font-size: 7rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            text-align: center;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 100;
-            text-shadow: 0 0 30px rgba(0,0,0,1);
-            width: 100%;
-        }
-
+        .btn-alt { background: linear-gradient(45deg, #cc00ff, var(--accent-pink)); } .btn-danger { background: linear-gradient(45deg, #ff0000, #cc0000); }
+        #big-feedback { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.5); font-size: 7rem; font-weight: 900; text-transform: uppercase; text-align: center; pointer-events: none; opacity: 0; z-index: 100; text-shadow: 0 0 30px rgba(0,0,0,1); width: 100%; }
         .animate-big-fade { animation: bigFadeOut 2.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
-
         #lobby-players { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 30px; }
         .player-badge { background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); padding: 10px 20px; border-radius: 30px; font-size: 1.2rem; }
-
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
         @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
-        @keyframes bigFadeOut {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
-            15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
-        }
+        @keyframes bigFadeOut { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } 80% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); } }
+        #warning-banner { background: #ff0055; color: white; padding: 10px; text-align: center; font-weight: bold; position: absolute; top: 0; width: 100%; z-index: 1000; display: none; }
     </style>
 </head>
 <body>
 
+    <div id="warning-banner">⚠️ WARNING: You opened this as a local file (file://). Multiplayer will be blocked by your browser! Run it on a web server or VS Code Live Server.</div>
+
     <aside id="history-sidebar">
         <h2>Network Log</h2>
         <div id="history-log">
-            <div class="log-entry" style="color: var(--text-muted)">Not connected...</div>
+            <div class="log-entry" style="color: var(--text-muted)">Awaiting instructions...</div>
         </div>
     </aside>
 
@@ -255,21 +126,26 @@
     </main>
 
     <script>
+        // Check for file protocol warning
+        if (window.location.protocol === 'file:') {
+            document.getElementById('warning-banner').style.display = 'block';
+        }
+
         // --- Game & Network State ---
         let localPlayer = { id: generateId(), name: '', isHost: false };
         let gameState = { roomId: null, mode: '2', players: [], activeTurnId: null, status: 'lobby' };
         
-        // PeerJS Variables
         let peer = null;
-        let connections = []; // Host uses this to talk to guests
-        let hostConnection = null; // Guests use this to talk to host
+        let connections = []; // Host uses this
+        let hostConnection = null; // Guests use this
 
-        // FIX 1: Provide STUN servers so devices on different networks can find each other
-        const peerConfig = {
+        // WebRTC Config
+        const peerOptions = {
+            debug: 2,
             config: {
                 iceServers: [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
+                    { urls: 'stun:global.stun.twilio.com:3478' } // Backup server added
                 ]
             }
         };
@@ -291,6 +167,7 @@
             div.className = `log-entry ${type}`;
             div.innerHTML = msg;
             document.getElementById('history-log').prepend(div);
+            console.log(`[NETWORK LOG]: ${msg}`);
         }
         function triggerBigFade(text, color) {
             const bf = document.getElementById('big-feedback');
@@ -298,10 +175,16 @@
             bf.classList.remove('animate-big-fade'); void bf.offsetWidth; bf.classList.add('animate-big-fade');
         }
 
+        function destroyPeer() {
+            if (peer) { peer.destroy(); peer = null; connections = []; hostConnection = null; }
+            gameState.players = [];
+        }
+
         // ==========================================
-        // HOST LOGIC (Acts as the Server)
+        // HOST LOGIC (Acts as Server)
         // ==========================================
         function createRoom() {
+            destroyPeer();
             localPlayer.name = document.getElementById('host-name').value || 'Host';
             localPlayer.isHost = true;
             gameState.mode = document.getElementById('host-mode').value;
@@ -309,29 +192,30 @@
             
             gameState.players.push({ id: localPlayer.id, name: localPlayer.name });
 
-            logEvent("Connecting to server broker...");
+            logEvent("Attempting to create room server...");
             
-            // FIX 2: Apply the STUN server config
-            peer = new Peer('nexus-' + gameState.roomId, peerConfig);
+            peer = new Peer('nexus-' + gameState.roomId, peerOptions);
 
             peer.on('open', (id) => {
-                logEvent(`Room Created. Waiting for connections...`);
+                logEvent(`Server established! Room Code: ${gameState.roomId}`, 'log-success');
                 updateLobbyUI();
                 showScreen('lobby');
             });
 
             peer.on('connection', (conn) => {
-                // FIX 3: Wait until connection is strictly open before pushing to active connections array
+                logEvent(`Incoming connection request from peer...`);
+                
                 conn.on('open', () => {
+                    logEvent(`Peer channel fully opened!`);
                     connections.push(conn);
                 });
                 
                 conn.on('data', (data) => {
+                    logEvent(`Received data: ${data.type}`);
                     if (data.type === 'JOIN') {
-                        // Prevent duplicate connections if player refreshes
                         if (!gameState.players.find(p => p.id === data.id)) {
                             gameState.players.push({ id: data.id, name: data.name });
-                            logEvent(`${data.name} joined the room!`, 'log-point');
+                            logEvent(`${data.name} officially joined!`, 'log-success');
                         }
                         broadcastState(); 
                     }
@@ -339,45 +223,45 @@
                         handleGuessData(data.playerId, data.value);
                     }
                 });
-                
+
                 conn.on('close', () => {
-                    logEvent(`A player disconnected.`, 'log-elimination');
+                    logEvent("A player disconnected.", "log-error");
                     connections = connections.filter(c => c !== conn);
                 });
             });
 
-            // FIX 4: Error handling so you know if network failed
             peer.on('error', (err) => {
-                logEvent(`Error: ${err.type}`, 'log-elimination');
-                console.error(err);
+                logEvent(`PeerJS Error: ${err.message}`, 'log-error');
             });
         }
 
         function broadcastState() {
             if (!localPlayer.isHost) return;
             updateLobbyUI();
+            logEvent("Broadcasting game state to clients...");
             connections.forEach(conn => conn.send({ type: 'STATE_UPDATE', state: gameState }));
         }
 
         // ==========================================
-        // GUEST LOGIC (Connects to the Host)
+        // GUEST LOGIC (Connects to Host)
         // ==========================================
         function joinRoom() {
+            destroyPeer();
             localPlayer.name = document.getElementById('join-name').value || 'Guest';
             localPlayer.isHost = false;
             let code = document.getElementById('join-code').value.toUpperCase();
             
-            logEvent("Finding room...");
+            logEvent(`Connecting to PeerJS Broker...`);
             
-            // Apply STUN server config for guest too
-            peer = new Peer(peerConfig); 
+            peer = new Peer(peerOptions);
 
-            peer.on('open', () => {
-                // Set reliable: true to prevent WebRTC message dropping
+            peer.on('open', (myId) => {
+                logEvent(`Broker connected. My ID is ${myId}. Finding Host ${code}...`);
+                
                 hostConnection = peer.connect('nexus-' + code, { reliable: true });
 
                 hostConnection.on('open', () => {
-                    logEvent("Connected to Host!");
+                    logEvent("Successfully connected to Host! Sending JOIN request...", 'log-success');
                     hostConnection.send({ type: 'JOIN', id: localPlayer.id, name: localPlayer.name });
                     showScreen('lobby');
                 });
@@ -387,6 +271,7 @@
                         gameState = data.state;
                         updateLobbyUI();
                         if (gameState.status === 'playing' && document.getElementById('screen-lobby').classList.contains('active')) {
+                            logEvent("Host started the game!", "log-success");
                             showScreen('game');
                         }
                         updateGameUI();
@@ -396,13 +281,18 @@
                         logEvent(data.logMsg);
                     }
                 });
+
+                hostConnection.on('close', () => {
+                    logEvent("Connection to host lost.", "log-error");
+                    alert("Host disconnected.");
+                    showScreen('menu');
+                });
             });
 
-            // Handle errors (e.g., incorrect room code)
             peer.on('error', (err) => {
-                logEvent(`Connection Failed: ${err.type}`, 'log-elimination');
+                logEvent(`Error: ${err.type}`, 'log-error');
                 if (err.type === 'peer-unavailable') {
-                    alert("Room not found! Ensure the host is active and code is correct.");
+                    alert(`Room ${code} not found! Check if Host is still in the lobby.`);
                 }
             });
         }
@@ -426,6 +316,9 @@
                 if (gameState.players.length >= req) {
                     btn.disabled = false;
                     btn.innerText = "Start Game";
+                } else {
+                    btn.disabled = true;
+                    btn.innerText = "Waiting for players...";
                 }
             } else {
                 btn.disabled = true;
@@ -457,6 +350,8 @@
         function sendGuess() {
             let guess = parseInt(document.getElementById('guess-input').value);
             if (isNaN(guess)) return;
+
+            logEvent(`You submitted guess: ${guess}`);
 
             if (localPlayer.isHost) {
                 handleGuessData(localPlayer.id, guess);
