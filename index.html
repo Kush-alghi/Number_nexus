@@ -81,6 +81,11 @@ main{flex:1;display:flex;align-items:center;justify-content:center;overflow-y:au
 .sub{font-family:var(--fm);font-size:.57rem;letter-spacing:5px;color:var(--muted);text-align:center;text-transform:uppercase;margin:4px 0 22px;}
 .slbl{font-family:var(--fm);font-size:.52rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
 
+/* ── HEADER ROW (title + help button) ── */
+.scr-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.help-btn{width:32px;height:32px;min-width:32px;border-radius:50%;border:1px solid var(--b2);background:rgba(0,232,255,.06);color:var(--cyan);font-family:var(--fh);font-size:.78rem;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.help-btn:hover{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,232,255,.25);}
+
 /* ── FIELDS ── */
 .field{margin-bottom:14px;}
 .field label{display:block;font-family:var(--fm);font-size:.54rem;letter-spacing:2px;color:var(--cyan);margin-bottom:6px;text-transform:uppercase;}
@@ -108,13 +113,17 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 .rval{font-family:var(--fh);font-size:2.7rem;letter-spacing:16px;color:var(--cyan);text-shadow:0 0 26px rgba(0,232,255,.5);}
 
 /* ── PLAYER CHIPS ── */
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(106px,1fr));gap:7px;margin:10px 0;}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(106px,1fr));gap:9px;margin:10px 0;}
 .pc{background:rgba(79,142,255,.08);border:1px solid rgba(79,142,255,.18);border-radius:7px;padding:9px 7px;text-align:center;font-family:var(--fm);font-size:.66rem;position:relative;transition:all .25s;line-height:1.3;}
 .pc.host::before{content:'HOST';position:absolute;top:-7px;left:50%;transform:translateX(-50%);font-size:.38rem;background:var(--gold);color:#020306;padding:1px 5px;border-radius:4px;letter-spacing:1px;}
 .pc .pts{display:block;font-size:.54rem;color:var(--gold);margin-top:3px;}
 .pc.elim{opacity:.22;text-decoration:line-through;border-color:rgba(255,26,108,.2);}
 .pc.active-turn{border-color:var(--green);background:rgba(0,255,136,.07);box-shadow:0 0 10px rgba(0,255,136,.16);}
 .dv{height:1px;background:var(--b1);margin:14px 0;}
+
+/* kick control (host-only, lobby) */
+.kick-x{position:absolute;top:-7px;right:-7px;width:19px;height:19px;border-radius:50%;background:var(--pink);color:#fff;font-size:.6rem;line-height:19px;text-align:center;cursor:pointer;border:1px solid #020306;box-shadow:0 0 8px rgba(255,26,108,.55);transition:transform .12s;}
+.kick-x:hover{transform:scale(1.15);}
 
 /* ── TURN BANNER ── */
 .tbanner{font-family:var(--fh);font-size:1.35rem;letter-spacing:3px;text-align:center;padding:12px;border-radius:8px;margin-bottom:12px;transition:all .35s;}
@@ -190,6 +199,24 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 .sbname{font-family:var(--fm);font-size:.74rem;color:var(--text);}
 .sbpts{font-family:var(--fh);font-size:1.22rem;letter-spacing:2px;color:var(--gold);}
 
+/* ── RULES MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(2,3,6,.85);backdrop-filter:blur(6px);z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.active{display:flex;}
+.modal-box{max-width:560px;width:100%;max-height:86vh;overflow-y:auto;}
+.modal-box::-webkit-scrollbar{width:4px;}
+.modal-box::-webkit-scrollbar-thumb{background:var(--b2);}
+.rule-step{display:flex;gap:13px;padding:12px 0;border-bottom:1px solid var(--b1);}
+.rule-step:last-child{border-bottom:none;}
+.rule-ico{font-size:1.5rem;flex-shrink:0;width:36px;text-align:center;line-height:1.4;}
+.rule-txt strong{color:var(--cyan);display:block;font-family:var(--fh);font-size:.72rem;letter-spacing:1px;margin-bottom:4px;}
+.rule-txt span{font-family:var(--fm);font-size:.62rem;color:var(--muted);line-height:1.65;}
+
+/* menu quick-rules strip */
+.qr-box{background:rgba(255,255,255,.02);border:1px solid var(--b1);border-radius:10px;padding:14px 16px;margin-top:14px;}
+.qr-row{display:flex;align-items:flex-start;gap:9px;font-family:var(--fm);font-size:.62rem;color:var(--text);line-height:1.7;padding:4px 0;}
+.qr-row b{color:var(--cyan);}
+.qr-row .ic{flex-shrink:0;}
+
 @media(max-width:640px){aside{display:none;}main{padding:12px;}.card{padding:16px 14px;}}
 </style>
 </head>
@@ -216,15 +243,16 @@ button:disabled{opacity:.25;cursor:not-allowed;}
       <button class="bp" onclick="goS('host')">⚡ Create Room</button>
       <button class="bc" onclick="goS('join')">🔗 Join Room</button>
     </div>
-    <div class="dv"></div>
-    <p style="font-family:var(--fm);font-size:.62rem;color:var(--muted);text-align:center;line-height:2.15;">
-      Each player secretly picks a number (1–Range).<br>
-      On your turn → just type any number.<br>
-      Everyone sees: <span style="color:var(--cyan)">"Player X is HOT 🔥 to someone's number"</span><br>
-      <span style="color:var(--pink)">Whose number? Nobody knows!</span><br>
-      Exact match → eliminated · <span style="color:var(--gold)">+10 pts</span><br>
-      Last survivor = <span style="color:var(--gold)">players × 5 bonus</span> · Highest score wins
-    </p>
+    <button class="bg full" style="margin-top:9px;" onclick="openRules()">📖 How To Play — Full Rules</button>
+
+    <div class="qr-box">
+      <div class="qr-row"><span class="ic">🔢</span><span>Everyone secretly picks a number in the room's range.</span></div>
+      <div class="qr-row"><span class="ic">🔁</span><span>On your turn, guess any number — you're aiming at <b>someone's</b> secret.</span></div>
+      <div class="qr-row"><span class="ic">🌡️</span><span>You'll see how HOT 🔥 or COLD ❄️ the guess is. Whose number it is stays hidden.</span></div>
+      <div class="qr-row"><span class="ic">🎯</span><span>Exact match → that player is <b>eliminated</b>, guesser gets <b style="color:var(--gold)">+10 pts</b>.</span></div>
+      <div class="qr-row"><span class="ic">🏆</span><span>Last survivor gets <b style="color:var(--gold)">players × 5</b> bonus points. Highest score wins.</span></div>
+      <div class="qr-row"><span class="ic">👮</span><span>The host can remove any player from the room at any time.</span></div>
+    </div>
   </div>
 </div>
 
@@ -270,7 +298,10 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 <div id="screen-lobby" class="screen">
   <div class="card">
     <div class="rbox"><div class="rlbl">Room Code — Share with friends</div><div class="rval" id="disp-code">----</div></div>
-    <div class="slbl">Players Connected</div>
+    <div class="scr-header" style="margin-bottom:8px;">
+      <div class="slbl" style="margin:0;">Players Connected</div>
+      <button class="help-btn" onclick="openRules()" title="Rules">?</button>
+    </div>
     <div class="pgrid" id="lobby-players"></div>
     <div class="dv"></div>
     <button id="btn-start" class="bp full" disabled onclick="hostStartGame()">Waiting for players…</button>
@@ -281,7 +312,10 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 <!-- PICK SECRET -->
 <div id="screen-pick" class="screen">
   <div class="card">
-    <div class="title" style="font-size:2rem;margin-bottom:2px;">Your Secret</div>
+    <div class="scr-header">
+      <div class="title" style="font-size:2rem;margin-bottom:2px;">Your Secret</div>
+      <button class="help-btn" onclick="openRules()" title="Rules">?</button>
+    </div>
     <div class="sub">Pick your hidden number</div>
     <p style="font-family:var(--fm);font-size:.65rem;color:var(--muted);text-align:center;line-height:1.95;margin-bottom:16px;">
       Choose any number between <strong id="pick-range" style="color:var(--cyan)">1 – 100</strong>.<br>
@@ -299,6 +333,10 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 <!-- GAME -->
 <div id="screen-game" class="screen">
   <div class="card">
+    <div class="scr-header" style="margin-bottom:8px;">
+      <div class="slbl" style="margin:0;">Round In Progress</div>
+      <button class="help-btn" onclick="openRules()" title="Rules">?</button>
+    </div>
     <div class="tbanner" id="tbanner">…</div>
     <div id="secret-badge-wrap" style="text-align:center;margin-bottom:10px;display:none;">
       <span class="secret-badge">🔒 Your secret: <span id="secret-badge-val" style="color:var(--green);margin-left:4px;"></span></span>
@@ -341,6 +379,62 @@ button:disabled{opacity:.25;cursor:not-allowed;}
 </div>
 
 </main>
+
+<!-- RULES MODAL -->
+<div id="rules-modal" class="modal-overlay">
+  <div class="card modal-box">
+    <div class="scr-header">
+      <div class="title" style="font-size:1.6rem;margin-bottom:2px;">How To Play</div>
+      <button class="bg" style="flex:0;padding:8px 14px;" onclick="closeRules()">✕</button>
+    </div>
+    <div class="sub" style="margin-bottom:4px;">NEXUS — Number Survival, Full Rules</div>
+
+    <div class="rule-step">
+      <div class="rule-ico">🔢</div>
+      <div class="rule-txt"><strong>1 · Pick a Secret Number</strong>
+        <span>When the round starts, every player privately chooses one number inside the room's range (e.g. 1–100). No one else ever sees it directly.</span>
+      </div>
+    </div>
+    <div class="rule-step">
+      <div class="rule-ico">🔁</div>
+      <div class="rule-txt"><strong>2 · Take Turns Guessing</strong>
+        <span>Players go in order. On your turn, type any number in range and submit — you're trying to land on someone's hidden secret.</span>
+      </div>
+    </div>
+    <div class="rule-step">
+      <div class="rule-ico">🌡️</div>
+      <div class="rule-txt"><strong>3 · Read The Heat, Not The Number</strong>
+        <span>After every guess, everyone sees a proximity meter — from ICE COLD ❄️ up to ON FIRE 🔥 — showing only how close it was to the nearest secret.</span>
+      </div>
+    </div>
+    <div class="rule-step">
+      <div class="rule-ico">🎭</div>
+      <div class="rule-txt"><strong>4 · The Target Stays Hidden</strong>
+        <span>You'll never be told which player's number is being targeted — only that some guess is getting hot for someone.</span>
+      </div>
+    </div>
+    <div class="rule-step">
+      <div class="rule-ico">🎯</div>
+      <div class="rule-txt"><strong>5 · Exact Match = Elimination</strong>
+        <span>Guess a secret number exactly and that player is eliminated instantly. The guesser earns <b style="color:var(--gold)">+10 points</b>.</span>
+      </div>
+    </div>
+    <div class="rule-step">
+      <div class="rule-ico">🏆</div>
+      <div class="rule-txt"><strong>6 · Last Survivor Wins Big</strong>
+        <span>The last player standing earns a bonus of <b style="color:var(--gold)">players × 5</b> points. Whoever has the highest total score wins.</span>
+      </div>
+    </div>
+    <div class="rule-step">
+      <div class="rule-ico">👮</div>
+      <div class="rule-txt"><strong>7 · Host Controls</strong>
+        <span>The host can remove any player from the room at any time using the ✕ on their name in the lobby or during a round.</span>
+      </div>
+    </div>
+
+    <button class="bp full" style="margin-top:14px;" onclick="closeRules()">Got It</button>
+  </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -388,11 +482,9 @@ button:disabled{opacity:.25;cursor:not-allowed;}
     cx.save();
     const GRID = 72;
     cx.lineWidth = .8;
-    // faint static grid
     cx.strokeStyle = 'rgba(0,232,255,0.035)';
     for(let x = 0; x < W; x += GRID){ cx.beginPath(); cx.moveTo(x,0); cx.lineTo(x,H); cx.stroke(); }
     for(let y = 0; y < H; y += GRID){ cx.beginPath(); cx.moveTo(0,y); cx.lineTo(W,y); cx.stroke(); }
-    // two pulsing highlight lines
     cx.strokeStyle = `rgba(0,232,255,${.06 + Math.sin(t) * .03})`;
     cx.lineWidth = 1.5;
     const hx = ((Math.sin(t * .4) * .5 + .5) * W);
@@ -428,7 +520,6 @@ button:disabled{opacity:.25;cursor:not-allowed;}
       if(p.y > H+10) p.y = -10;
     });
 
-    // lines between close particles
     cx.save();
     for(let i = 0; i < pts.length; i++){
       for(let j = i+1; j < pts.length; j++){
@@ -448,7 +539,6 @@ button:disabled{opacity:.25;cursor:not-allowed;}
     }
     cx.restore();
 
-    // particle dots
     pts.forEach(p => {
       const a = Math.max(0, (p.a + Math.sin(p.ph) * .18) * .85);
       cx.save();
@@ -462,7 +552,6 @@ button:disabled{opacity:.25;cursor:not-allowed;}
       cx.restore();
     });
 
-    // ── horizontal scan line ──
     const scanY = ((t * 30) % (H + 20)) - 10;
     cx.save();
     const sg = cx.createLinearGradient(0, scanY - 8, 0, scanY + 8);
@@ -513,6 +602,8 @@ const SFX = {
   burning:  ()=>{ [600,780,960,1140].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.09,.17),i*55)); },
   elim:     ()=>{ [320,260,200,150].forEach((f,i)=>setTimeout(()=>tone(f,'sawtooth',.15,.18),i*75)); setTimeout(()=>tone(100,'square',.45,.25),310); },
   win:      ()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.28,.22),i*140)); setTimeout(()=>{ [784,988,1175].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.3,.2),i*100)); },640); },
+  kick:     ()=>{ [520,400,300,180].forEach((f,i)=>setTimeout(()=>tone(f,'sawtooth',.13,.16),i*70)); },
+  modal:    ()=>{ tone(500,'sine',.08,.1); },
 };
 
 function sndForPct(pct){
@@ -526,6 +617,13 @@ function sndForPct(pct){
 
 // Click sound on all buttons
 document.addEventListener('click', e=>{ if(e.target.closest('button')) SFX.click(); });
+
+// ═══════════════════════════════════════════════════
+// RULES MODAL CONTROLS
+// ═══════════════════════════════════════════════════
+function openRules(){ document.getElementById('rules-modal').classList.add('active'); SFX.modal(); }
+function closeRules(){ document.getElementById('rules-modal').classList.remove('active'); }
+document.getElementById('rules-modal').addEventListener('click', e=>{ if(e.target.id==='rules-modal') closeRules(); });
 
 // ═══════════════════════════════════════════════════
 // STATE
@@ -626,6 +724,48 @@ function pushAll(obj){
 }
 
 // ═══════════════════════════════════════════════════
+// HOST — KICK PLAYER
+// ═══════════════════════════════════════════════════
+function hostKickPlayer(id){
+  if(!ME.isHost) return;
+  const p = GS.players.find(x=>x.id===id);
+  if(!p || p.isHost) return;
+  if(!confirm(`Remove ${p.name} from the room?`)) return;
+
+  const wasActiveTurn = GS.activeTurnId === id;
+  const conn = conns.find(c=>c._gid===id);
+  if(conn){
+    try{ conn.send({type:'KICKED'}); }catch(e){}
+    setTimeout(()=>{ try{ conn.close(); }catch(e){} }, 150);
+  }
+
+  GS.players = GS.players.filter(x=>x.id!==id);
+  delete GS.secrets[id];
+  GS.picksReady = GS.picksReady.filter(x=>x!==id);
+  L(`<b>${p.name}</b> was removed by the host`,'bad');
+  SFX.kick();
+
+  if(GS.status==='playing'){
+    const alive = GS.players.filter(x=>!x.eliminated);
+    if(alive.length<=1){
+      if(alive.length===1){
+        const bonus = GS.startCount*5;
+        alive[0].score += bonus;
+        L(`🏆 <b>${alive[0].name}</b> wins by default! +${bonus} pts`,'g');
+      }
+      GS.status='ended';
+      broadcast();
+      setTimeout(()=>{ SFX.win(); showEndScreen(); },600);
+      return;
+    }
+    if(wasActiveTurn) GS.activeTurnId = alive[0].id;
+  }
+  if(GS.status==='pick') checkAllPicked();
+
+  broadcast();
+}
+
+// ═══════════════════════════════════════════════════
 // GUEST
 // ═══════════════════════════════════════════════════
 function joinRoom(){
@@ -660,6 +800,21 @@ function guestReceive(data){
     if(data.result){ renderBcast(data.result); sndForPct(data.result.pct); }
     if(data.guessLog) GS.guessLog = data.guessLog;
     updateGameUI();
+  }
+  if(data.type==='KICKED'){
+    SFX.kick();
+    BF('REMOVED BY HOST', 'var(--pink)');
+    L('You were removed from the room by the host','bad');
+    setTimeout(()=>{
+      try{ hostConn.close(); }catch(e){}
+      try{ peer.destroy(); }catch(e){}
+      GS = { roomId:null, range:100, status:'lobby', players:[], secrets:{}, picksReady:[], activeTurnId:null, startCount:0, guessLog:[] };
+      mySecret = null; _lastTurn = null;
+      document.getElementById('bcast').style.display = 'none';
+      document.getElementById('glog-wrap').style.display = 'none';
+      document.getElementById('secret-badge-wrap').style.display = 'none';
+      goS('menu');
+    }, 1500);
   }
 }
 
@@ -704,7 +859,7 @@ function lockSecret(){
 }
 
 function checkAllPicked(){
-  if(GS.picksReady.length >= GS.players.length){
+  if(GS.players.length>0 && GS.picksReady.length >= GS.players.length){
     L('All locked! Game starting…','ok');
     SFX.start();
     GS.status = 'playing';
@@ -797,16 +952,25 @@ function updateLobby(){
     const d = document.createElement('div');
     d.className = 'pc' + (p.isHost?' host':'');
     d.textContent = p.name;
+    if(ME.isHost && !p.isHost){
+      const x = document.createElement('div');
+      x.className = 'kick-x';
+      x.textContent = '✕';
+      x.title = 'Remove ' + p.name;
+      x.onclick = (e)=>{ e.stopPropagation(); hostKickPlayer(p.id); };
+      d.appendChild(x);
+    }
     cont.appendChild(d);
   });
   if(ME.isHost){
     const btn  = document.getElementById('btn-start');
     const hint = document.getElementById('lobby-hint');
-    if(GS.players.length >= 2){ btn.disabled=false; btn.textContent='▶ Start Game'; hint.textContent=''; }
+    if(GS.players.length >= 2){ btn.disabled=false; btn.textContent='▶ Start Game'; hint.textContent='Tip: tap the ✕ on a player to remove them before starting.'; }
     else{ btn.disabled=true; btn.textContent='Waiting for players…'; hint.textContent='Need at least 2 players'; }
   } else {
     document.getElementById('btn-start').disabled = true;
     document.getElementById('btn-start').textContent = 'Host will start the game…';
+    document.getElementById('lobby-hint').textContent = 'The host may remove players from the room at any time.';
   }
 }
 
@@ -853,13 +1017,21 @@ function updateGameUI(){
     });
   }
 
-  // Player chips
+  // Player chips — host can also kick mid-game
   const gp = document.getElementById('game-players');
   gp.innerHTML = '';
   GS.players.forEach(p=>{
     const d = document.createElement('div');
     d.className = 'pc'+(p.isHost?' host':'')+(p.eliminated?' elim':'')+((!p.eliminated&&p.id===GS.activeTurnId)?' active-turn':'');
     d.innerHTML = `${p.name}<span class="pts">${p.score} pts</span>`;
+    if(ME.isHost && !p.isHost){
+      const x = document.createElement('div');
+      x.className = 'kick-x';
+      x.textContent = '✕';
+      x.title = 'Remove ' + p.name;
+      x.onclick = (e)=>{ e.stopPropagation(); hostKickPlayer(p.id); };
+      d.appendChild(x);
+    }
     gp.appendChild(d);
   });
 }
